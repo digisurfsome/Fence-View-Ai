@@ -1,0 +1,106 @@
+{
+  "description": "Test images for fence transformation - old/weathered fences on nice properties",
+  "instructions": "Run: bash download.sh (or manually download each URL)",
+  "images": [
+    {
+      "id": "backyard-weathered-01",
+      "filename": "backyard-weathered-01.jpg",
+      "description": "Weathered wooden fence in nice backyard with grass",
+      "url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80",
+      "source": "unsplash",
+      "type": "backyard",
+      "angle": "straight",
+      "fenceSide": "back"
+    },
+    {
+      "id": "wooden-fence-02",
+      "filename": "wooden-fence-02.jpg",
+      "description": "Old wooden fence showing weathering",
+      "url": "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=1200&q=80",
+      "source": "unsplash",
+      "type": "backyard",
+      "angle": "angled",
+      "fenceSide": "front"
+    },
+    {
+      "id": "privacy-fence-03",
+      "filename": "privacy-fence-03.jpg",
+      "description": "Aged privacy fence in residential yard",
+      "url": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=80",
+      "source": "unsplash",
+      "type": "backyard",
+      "angle": "straight",
+      "fenceSide": "back"
+    },
+    {
+      "id": "backyard-view-04",
+      "filename": "backyard-view-04.jpg",
+      "description": "Backyard with fence needing update",
+      "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80",
+      "source": "unsplash",
+      "type": "backyard",
+      "angle": "corner",
+      "fenceSide": "back"
+    },
+    {
+      "id": "residential-yard-05",
+      "filename": "residential-yard-05.jpg",
+      "description": "Nice house with old fence",
+      "url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80",
+      "source": "unsplash",
+      "type": "front",
+      "angle": "straight",
+      "fenceSide": "front"
+    },
+    {
+      "id": "pexels-backyard-06",
+      "filename": "pexels-backyard-06.jpg",
+      "description": "Backyard fence in residential setting",
+      "url": "https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg?w=1200",
+      "source": "pexels",
+      "type": "backyard",
+      "angle": "straight",
+      "fenceSide": "back"
+    },
+    {
+      "id": "pexels-house-07",
+      "filename": "pexels-house-07.jpg",
+      "description": "House exterior with fence",
+      "url": "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?w=1200",
+      "source": "pexels",
+      "type": "front",
+      "angle": "angled",
+      "fenceSide": "front"
+    },
+    {
+      "id": "pexels-yard-08",
+      "filename": "pexels-yard-08.jpg",
+      "description": "Yard with wooden fence",
+      "url": "https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?w=1200",
+      "source": "pexels",
+      "type": "backyard",
+      "angle": "corner",
+      "fenceSide": "back"
+    },
+    {
+      "id": "pexels-garden-09",
+      "filename": "pexels-garden-09.jpg",
+      "description": "Garden area with old fence",
+      "url": "https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?w=1200",
+      "source": "pexels",
+      "type": "backyard",
+      "angle": "straight",
+      "fenceSide": "front"
+    },
+    {
+      "id": "pexels-property-10",
+      "filename": "pexels-property-10.jpg",
+      "description": "Property with fence boundary",
+      "url": "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?w=1200",
+      "source": "pexels",
+      "type": "front",
+      "angle": "straight",
+      "fenceSide": "front"
+    }
+  ]
+}
