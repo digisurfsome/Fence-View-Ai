@@ -1,12 +1,29 @@
 {
-  "name": "austin-home-services-leads",
+  "name": "fence-view-ai",
   "version": "1.0.0",
-  "description": "Lead generation system for roofing and fencing services in Austin",
+  "description": "AI-powered fence visualization and home services lead generation",
+  "main": "src/services/transformation-api.js",
   "scripts": {
     "dev": "npx live-server public --port=3000",
-    "build": "echo 'Static site - just deploy public folder'"
+    "build": "echo 'Static site - just deploy public folder'",
+    "test:list": "node src/test-transformation.js list",
+    "test:prompt": "node src/test-transformation.js prompt",
+    "test:analyze": "node src/test-transformation.js analyze",
+    "test:transform": "node src/test-transformation.js transform",
+    "test:batch": "node src/test-transformation.js batch"
   },
-  "keywords": ["leads", "roofing", "fencing", "austin"],
+  "keywords": [
+    "fence",
+    "visualization",
+    "ai",
+    "home-improvement",
+    "lead-generation",
+    "gemini",
+    "image-generation"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

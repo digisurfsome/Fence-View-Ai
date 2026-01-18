@@ -1,106 +1,210 @@
-# Austin Home Services Lead Generation
+# Fence View AI
 
-Lead generation system for home improvement services in Austin, Texas. Currently includes:
+AI-powered fence visualization system that transforms photos of existing fences into previews of new fence styles. Also includes lead generation landing pages for home services in Austin.
 
-- **Roofing** - Storm damage inspection & insurance claim assistance
-- **Fencing** - AI-powered fence visualization tool
+## The Core Engine
+
+The heart of this system is the **prompt engineering** that makes AI image models (Gemini 1.5, GPT-4 Vision) accurately replace fences while preserving:
+- Exact camera angle and perspective
+- Surrounding environment
+- Lighting and shadows
+- Fence footprint and location
+
+### Cost Breakdown
+
+Using Gemini 1.5 Flash at low resolution:
+- **~$0.04 per image generated**
+- 10 fence styles = ~$0.40 per customer
+- 1000 customers = ~$400
 
 ## Quick Start
 
+### 1. Test the Prompts (No API Key Needed)
+
 ```bash
-# Install live-server globally (if not already installed)
-npm install -g live-server
+# See all available fence styles
+node src/test-transformation.js list
 
-# Run development server
-npm run dev
-
-# Or just open public/index.html in your browser
+# Preview the prompts that would be used
+node src/test-transformation.js prompt wood-privacy
 ```
 
-Visit `http://localhost:3000` to see the landing pages.
+### 2. Test Image Analysis (Requires API Key)
+
+```bash
+# Set your API key
+export GEMINI_API_KEY=your_key_here
+
+# Analyze a fence photo
+node src/test-transformation.js analyze ./path/to/fence.jpg
+```
+
+### 3. Transform a Fence
+
+```bash
+# Single style
+node src/test-transformation.js transform ./fence.jpg wood-privacy
+
+# Multiple styles at once
+node src/test-transformation.js batch ./fence.jpg wood-privacy,wrought-iron,vinyl-privacy
+```
+
+Output images are saved to `./output/`
 
 ## Project Structure
 
 ```
-public/
-├── index.html          # Homepage with links to all landing pages
-├── css/
-│   └── styles.css      # Shared styles for all pages
-├── js/
-│   └── form-handler.js # Lead capture & backend integration
-├── roofing/
-│   └── index.html      # Roofing landing page
-├── fencing/
-│   └── index.html      # Fencing landing page
-└── images/             # Image assets (add your own)
+├── src/
+│   ├── prompts/
+│   │   ├── transformation-prompts.js  # THE SECRET SAUCE - prompt templates
+│   │   └── fence-styles.js            # Fence style definitions
+│   ├── services/
+│   │   ├── image-generator.js         # Gemini/OpenAI API integration
+│   │   └── transformation-api.js      # High-level API for apps
+│   └── test-transformation.js         # CLI test tool
+│
+├── public/                            # Landing pages for lead gen
+│   ├── roofing/                       # Storm damage lead capture
+│   └── fencing/                       # Fence visualization lead capture
+│
+├── assets/
+│   ├── fence-styles/                  # Reference images for each style
+│   └── test-images/                   # Test fence photos
+│
+└── output/                            # Generated images go here
 ```
 
-## Connecting to a Backend
+## Available Fence Styles
 
-Edit `public/js/form-handler.js` and change the `CONFIG` object:
+| ID | Name | Material |
+|----|------|----------|
+| `wood-privacy` | Wood Privacy Fence | Cedar |
+| `wood-privacy-white` | White Wood Privacy | Painted wood |
+| `cedar-horizontal` | Modern Horizontal Cedar | Cedar |
+| `picket` | Classic Picket | Wood/Vinyl |
+| `shadow-box` | Shadow Box | Cedar/Pine |
+| `wrought-iron` | Wrought Iron | Iron/Steel |
+| `aluminum` | Aluminum Fence | Aluminum |
+| `chain-link` | Chain Link | Galvanized steel |
+| `chain-link-black` | Black Vinyl Chain Link | Vinyl-coated steel |
+| `vinyl-privacy` | Vinyl Privacy | PVC |
+| `vinyl-privacy-tan` | Tan Vinyl Privacy | PVC |
+| `composite` | Composite Fence | Wood-plastic |
+| `farm-ranch` | Farm/Ranch Rail | Wood |
 
-### Option 1: Zapier Webhook
+## How the Prompting Works
+
+### Shot Type Detection
+
+First, the system analyzes the input image to detect:
+- **STRAIGHT-ON**: Camera perpendicular to fence
+- **ANGLED**: Camera at an angle (perspective visible)
+- **CORNER**: Multiple fence sections visible
+- **NO_FENCE**: New installation needed
+
+### Prompt Selection
+
+Based on shot type, different prompts are used:
+
 ```javascript
-const CONFIG = {
-  backend: 'zapier',
-  zapierWebhook: 'https://hooks.zapier.com/hooks/catch/YOUR_ID/YOUR_HOOK/',
-};
+// For straight shots - simpler replacement
+FENCE_PROMPTS.straightShot.prompt(fenceStyle)
+
+// For angled shots - perspective-aware replacement
+FENCE_PROMPTS.angledShot.prompt(fenceStyle)
+
+// For corners - multi-section consistency
+FENCE_PROMPTS.cornerShot.prompt(fenceStyle)
 ```
 
-### Option 2: Google Sheets
-1. Create a Google Sheet
-2. Go to Extensions > Apps Script
-3. Deploy as web app
-4. Update config:
+### Style-Specific Hints
+
+Each fence style has detailed `promptHints` that help the AI understand:
+- Board orientation and spacing
+- Post style and placement
+- Material texture
+- Color and finish
+
+## Usage in Your App
+
 ```javascript
-const CONFIG = {
-  backend: 'sheets',
-  sheetsUrl: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
-};
+const { TransformationSession } = require('./src/services/transformation-api');
+
+// Create a session for a customer
+const session = new TransformationSession({
+  contractorId: 'my-fence-company',
+  styleIds: ['wood-privacy', 'wrought-iron', 'vinyl-privacy'],
+});
+
+// Set the customer's fence photo
+await session.setOriginalImage(imageBase64);
+
+// Generate a single preview (on-demand, saves cost)
+const preview = await session.generatePreview('wood-privacy');
+
+// Or generate all at once
+const allPreviews = await session.generateAllPreviews();
+
+// Get cost tracking
+console.log(session.getSummary());
 ```
 
-### Option 3: Formspree
-1. Sign up at formspree.io
-2. Create a form
-3. Update config:
-```javascript
-const CONFIG = {
-  backend: 'formspree',
-  formspreeId: 'YOUR_FORM_ID',
-};
+## The Business Model
+
+### For Fence Contractors (B2B)
+
+1. Contractor uploads customer's fence photo during quote visit
+2. System generates previews of all styles they offer
+3. Customer sees their house with each fence option
+4. Contractor closes the deal on-site
+
+**Value**: Closes more deals, higher ticket prices
+
+### For Lead Generation
+
+1. Homeowner uploads photo on landing page
+2. Sees fence previews, gets excited
+3. Submits contact info
+4. Sell the lead to fence contractors ($50-500/lead)
+
+### For the Sales Bot Integration
+
+1. AI analyzes photo
+2. Generates previews
+3. Sales bot walks customer through options
+4. Closes the deal automatically
+5. Deliver closed deal to contractor ($500+)
+
+## Landing Pages
+
+Landing pages are in the `public/` folder:
+
+```bash
+# Run local server
+npm run dev
+
+# Visit http://localhost:3000
 ```
 
-## Testing Leads
+### Connecting Lead Capture to Backend
 
-While in development (backend: 'console'), leads are stored in localStorage.
+Edit `public/js/form-handler.js` - supports Zapier, Google Sheets, Formspree, or custom API.
 
-Open browser console and run:
-- `viewLeads()` - See all captured leads
-- `exportLeadsCSV()` - Download leads as CSV file
+## Environment Variables
 
-## Deployment
+```bash
+GEMINI_API_KEY=your_gemini_key    # For Google Gemini
+OPENAI_API_KEY=your_openai_key    # For OpenAI (alternative)
+AI_PROVIDER=gemini                 # 'gemini' or 'openai'
+```
 
-This is a static site. Deploy the `public/` folder to:
-- Netlify (drag & drop)
-- Vercel
-- GitHub Pages
-- Any web hosting
+## Extending to Other Home Services
 
-## Adding More Services
-
-1. Create new folder in `public/` (e.g., `public/painting/`)
-2. Copy `fencing/index.html` as template
-3. Update content, colors, and form fields
-4. Add link to homepage (`public/index.html`)
-
-## Future Enhancements
-
-- [ ] AI fence visualization (GPT-4 Vision integration)
-- [ ] Hail storm alert integration
-- [ ] County assessor data scraping
-- [ ] CRM integration (HubSpot, Salesforce)
-- [ ] SMS notifications for new leads
-- [ ] A/B testing framework
+The same prompting system works for:
+- **Paint**: Change house exterior colors (see `PAINT_PROMPTS`)
+- **Roofing**: Visualize new roof materials (see `ROOFING_PROMPTS`)
+- **Landscaping**: Add/modify landscaping
+- **Windows**: Show new window styles
 
 ## License
 
