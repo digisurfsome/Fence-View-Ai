@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Pick the Perfect Fence!</title>
+  <meta name="description" content="Your friend needs your help choosing a fence. Vote for your favorite!">
+
+  <!-- Open Graph for text sharing -->
+  <meta property="og:title" content="Help me pick my new fence!">
+  <meta property="og:description" content="I'm getting a new fence and need your opinion. Vote for your favorite style!">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1584738766473-61c083514bf4?w=600">
+  <meta property="og:type" content="website">
+
+  <style>
+    :root {
+      --primary: #2d5016;
+      --accent: #c9a227;
+      --dark: #1a1a2e;
+      --success: #00c853;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* ========== HEADER ========== */
+    .share-header {
+      background: linear-gradient(135deg, var(--dark) 0%, #2a2a4a 100%);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .share-header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+
+    .share-header .owner-name {
+      color: var(--accent);
+    }
+
+    .share-header p {
+      color: rgba(255,255,255,0.7);
+      font-size: 1rem;
+    }
+
+    .vote-count-banner {
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 20px;
+      display: inline-block;
+    }
+
+    .vote-count-banner span {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    /* ========== PERSONALITY QUIZ MODAL ========== */
+    .quiz-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .quiz-overlay.hidden { display: none; }
+
+    .quiz-card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px 30px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .quiz-card h2 {
+      color: var(--dark);
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+
+    .quiz-card .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .quiz-progress {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 30px;
+    }
+
+    .quiz-progress .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+
+    .quiz-progress .dot.active { background: var(--accent); }
+    .quiz-progress .dot.done { background: var(--success); }
+
+    .quiz-question {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 25px;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .quiz-option {
+      padding: 16px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      font-size: 1rem;
+    }
+
+    .quiz-option:hover {
+      border-color: var(--accent);
+      background: #fffbf0;
+    }
+
+    .quiz-option.selected {
+      border-color: var(--primary);
+      background: #f0f7e6;
+    }
+
+    /* ========== RESULTS GRID ========== */
+    .results-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .results-intro {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .results-intro h2 {
+      font-size: 1.5rem;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+
+    .fence-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .fence-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .fence-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .fence-card.voted {
+      border: 3px solid var(--success);
+    }
+
+    .fence-card.top-voted::before {
+      content: '👑 TOP PICK';
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--accent);
+      color: var(--dark);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    .fence-image {
+      position: relative;
+      height: 200px;
+    }
+
+    .fence-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .vote-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .fence-info {
+      padding: 20px;
+    }
+
+    .fence-info h3 {
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+      color: var(--dark);
+    }
+
+    .fence-info p {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+
+    /* Vote Button */
+    .vote-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .vote-btn.not-voted {
+      background: linear-gradient(90deg, var(--primary), #4a7c23);
+      color: white;
+    }
+
+    .vote-btn.not-voted:hover {
+      transform: scale(1.02);
+    }
+
+    .vote-btn.has-voted {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .vote-btn.my-vote {
+      background: var(--success);
+      color: white;
+    }
+
+    /* ========== COMMENTS SECTION ========== */
+    .comments-section {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      margin-top: 15px;
+    }
+
+    .comments-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .comments-toggle h4 {
+      font-size: 0.95rem;
+      color: var(--dark);
+    }
+
+    .comments-count {
+      background: var(--accent);
+      color: var(--dark);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .comments-list {
+      margin-top: 15px;
+      display: none;
+    }
+
+    .comments-list.show { display: block; }
+
+    .comment {
+      padding: 15px;
+      background: #f8f8f8;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .comment-author {
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .comment-time {
+      color: #999;
+      font-size: 0.8rem;
+    }
+
+    .comment-text {
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .comment-reaction {
+      display: inline-block;
+      background: #fff;
+      padding: 4px 10px;
+      border-radius: 15px;
+      margin-top: 8px;
+      font-size: 1.2rem;
+    }
+
+    /* Add Comment */
+    .add-comment {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .add-comment input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    .add-comment input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .add-comment button {
+      padding: 12px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* Reaction Picker */
+    .reaction-picker {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .reaction-btn {
+      padding: 8px 12px;
+      background: #f0f0f0;
+      border: 2px solid transparent;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.2s;
+    }
+
+    .reaction-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .reaction-btn.selected {
+      border-color: var(--accent);
+      background: #fffbf0;
+    }
+
+    /* ========== SHARE CTA ========== */
+    .share-cta {
+      background: linear-gradient(135deg, var(--dark) 0%, #2a2a4a 100%);
+      padding: 40px 20px;
+      text-align: center;
+      color: white;
+      margin-top: 40px;
+    }
+
+    .share-cta h2 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .share-cta p {
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 25px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .share-cta .cta-btn {
+      display: inline-block;
+      padding: 16px 40px;
+      background: linear-gradient(90deg, var(--accent), #e0b82a);
+      color: var(--dark);
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .share-cta .cta-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .incentive-text {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    .incentive-text strong {
+      color: var(--accent);
+    }
+
+    /* ========== MOBILE OPTIMIZATIONS ========== */
+    @media (max-width: 600px) {
+      .share-header h1 { font-size: 1.4rem; }
+      .fence-grid { grid-template-columns: 1fr; }
+      .quiz-card { padding: 30px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Personality Quiz Overlay (shows first for friends) -->
+  <div class="quiz-overlay" id="quizOverlay">
+    <div class="quiz-card">
+      <h2>Before you vote...</h2>
+      <p class="subtitle">Help us understand how you can best help <span id="ownerNameQuiz">your friend</span></p>
+
+      <div class="quiz-progress">
+        <span class="dot active" data-q="1"></span>
+        <span class="dot" data-q="2"></span>
+        <span class="dot" data-q="3"></span>
+      </div>
+
+      <div id="quizContent">
+        <!-- Questions injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="share-header">
+    <h1>Help <span class="owner-name" id="ownerName">Your Friend</span> Pick a Fence!</h1>
+    <p>They're getting a new fence and need your opinion</p>
+
+    <div class="vote-count-banner">
+      <span id="totalVotes">0</span> votes so far
+    </div>
+  </header>
+
+  <!-- Results Grid -->
+  <div class="results-container">
+    <div class="results-intro">
+      <h2>Tap your favorite to vote</h2>
+      <p>You can also leave a comment to help them decide</p>
+    </div>
+
+    <div class="fence-grid" id="fenceGrid">
+      <!-- Fence cards injected here -->
+    </div>
+  </div>
+
+  <!-- Share CTA for friends -->
+  <div class="share-cta">
+    <h2>Know someone else getting a fence?</h2>
+    <p>Try our free AI fence visualizer - see your own home with 12 different fence styles instantly!</p>
+    <a href="/fencing/" class="cta-btn">Try It Free</a>
+
+    <div class="incentive-text">
+      <strong>Bonus:</strong> Share with a friend who signs up and get entered to win a $500 Home Depot gift card!
+    </div>
+  </div>
+
+  <script>
+    // ========== CONFIG ==========
+    const SESSION = {
+      // Get session ID from URL: /share/?s=abc123
+      id: new URLSearchParams(window.location.search).get('s') || 'demo',
+      ownerName: 'Mike',
+      refCode: new URLSearchParams(window.location.search).get('ref'),
+
+      // Personality type mapping (DISC-style)
+      // D = Dominant, I = Influencer, S = Steady, C = Conscientious
+      personalityMap: {
+        'A': 'D', 'B': 'I', 'C': 'S', 'D': 'C'
+      }
+    };
+
+    // ========== PERSONALITY QUESTIONS FOR FRIENDS ==========
+    const FRIEND_QUESTIONS = [
+      {
+        q: "How well do you know " + SESSION.ownerName + "?",
+        options: [
+          { text: "We go way back - I know them inside and out", value: "A" },
+          { text: "Good friends - we hang out regularly", value: "B" },
+          { text: "We're close - been through a lot together", value: "C" },
+          { text: "I know them well enough to give good advice", value: "D" }
+        ]
+      },
+      {
+        q: "When " + SESSION.ownerName + " makes big decisions, they usually...",
+        options: [
+          { text: "Decide fast and don't look back", value: "A" },
+          { text: "Talk to everyone and get excited about options", value: "B" },
+          { text: "Take their time and consider everyone's feelings", value: "C" },
+          { text: "Research everything and want all the facts", value: "D" }
+        ]
+      },
+      {
+        q: "What would help " + SESSION.ownerName + " most right now?",
+        options: [
+          { text: "Just tell them which one to get - be direct", value: "A" },
+          { text: "Hype them up about how great it'll look!", value: "B" },
+          { text: "Reassure them any choice will be fine", value: "C" },
+          { text: "Give them pros and cons of each option", value: "D" }
+        ]
+      }
+    ];
+
+    // ========== FENCE STYLES ==========
+    const FENCE_STYLES = [
+      { id: 'wood-privacy', name: 'Wood Privacy', desc: 'Classic cedar - most popular', votes: 12, img: 'https://images.unsplash.com/photo-1584738766473-61c083514bf4?w=600&q=80' },
+      { id: 'wood-horizontal', name: 'Horizontal Modern', desc: 'Contemporary look', votes: 8, img: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80' },
+      { id: 'vinyl-white', name: 'White Vinyl', desc: 'Zero maintenance', votes: 5, img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80' },
+      { id: 'wrought-iron', name: 'Wrought Iron', desc: 'Elegant & secure', votes: 3, img: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&q=80' },
+      { id: 'cedar-natural', name: 'Natural Cedar', desc: 'Beautiful grain', votes: 7, img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80' },
+      { id: 'board-on-board', name: 'Board on Board', desc: 'No gaps, premium', votes: 4, img: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80' }
+    ];
+
+    // Sample comments
+    const SAMPLE_COMMENTS = {
+      'wood-privacy': [
+        { author: 'Sarah', text: 'This is SO you! Classic and timeless.', reaction: '👍', time: '2 hours ago' },
+        { author: 'Tom', text: 'Dude get this one. Trust me.', reaction: '🔥', time: '1 hour ago' }
+      ],
+      'wood-horizontal': [
+        { author: 'Alex', text: 'Very modern! Would look sick with your house', reaction: '😍', time: '3 hours ago' }
+      ]
+    };
+
+    // ========== QUIZ LOGIC ==========
+    let currentQuestion = 0;
+    let quizAnswers = [];
+    let userPersonality = null;
+    let hasVoted = false;
+    let userVote = null;
+
+    function initQuiz() {
+      // Check if user already completed quiz
+      const saved = localStorage.getItem(`quiz_${SESSION.id}`);
+      if (saved) {
+        const data = JSON.parse(saved);
+        userPersonality = data.personality;
+        hasVoted = data.hasVoted;
+        userVote = data.vote;
+        document.getElementById('quizOverlay').classList.add('hidden');
+        renderFenceGrid();
+        return;
+      }
+
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = FRIEND_QUESTIONS[currentQuestion];
+      const content = document.getElementById('quizContent');
+
+      content.innerHTML = `
+        <p class="quiz-question">${q.q}</p>
+        <div class="quiz-options">
+          ${q.options.map((opt, i) => `
+            <button class="quiz-option" onclick="selectAnswer('${opt.value}', this)">
+              ${opt.text}
+            </button>
+          `).join('')}
+        </div>
+      `;
+
+      // Update progress dots
+      document.querySelectorAll('.quiz-progress .dot').forEach((dot, i) => {
+        dot.classList.remove('active', 'done');
+        if (i < currentQuestion) dot.classList.add('done');
+        if (i === currentQuestion) dot.classList.add('active');
+      });
+    }
+
+    function selectAnswer(value, btn) {
+      // Highlight selected
+      document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      quizAnswers.push(value);
+
+      // Small delay then next question
+      setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < FRIEND_QUESTIONS.length) {
+          renderQuestion();
+        } else {
+          completeQuiz();
+        }
+      }, 300);
+    }
+
+    function completeQuiz() {
+      // Calculate personality type (most common answer)
+      const counts = {};
+      quizAnswers.forEach(a => counts[a] = (counts[a] || 0) + 1);
+      const dominant = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+      userPersonality = SESSION.personalityMap[dominant];
+
+      // Save to localStorage
+      localStorage.setItem(`quiz_${SESSION.id}`, JSON.stringify({
+        personality: userPersonality,
+        answers: quizAnswers,
+        hasVoted: false,
+        vote: null,
+        timestamp: new Date().toISOString()
+      }));
+
+      // Hide quiz, show results
+      document.getElementById('quizOverlay').classList.add('hidden');
+      renderFenceGrid();
+
+      // Track
+      console.log('Personality type:', userPersonality);
+    }
+
+    // ========== RENDER FENCE GRID ==========
+    function renderFenceGrid() {
+      const grid = document.getElementById('fenceGrid');
+      const totalVotes = FENCE_STYLES.reduce((sum, f) => sum + f.votes, 0);
+      const topVoted = FENCE_STYLES.reduce((max, f) => f.votes > max.votes ? f : max, FENCE_STYLES[0]);
+
+      document.getElementById('totalVotes').textContent = totalVotes;
+      document.getElementById('ownerName').textContent = SESSION.ownerName;
+
+      grid.innerHTML = FENCE_STYLES.map(fence => {
+        const isTop = fence.id === topVoted.id;
+        const isMyVote = userVote === fence.id;
+        const comments = SAMPLE_COMMENTS[fence.id] || [];
+
+        return `
+          <div class="fence-card ${isTop ? 'top-voted' : ''} ${isMyVote ? 'voted' : ''}" data-id="${fence.id}">
+            <div class="fence-image">
+              <img src="${fence.img}" alt="${fence.name}">
+              <div class="vote-badge">${fence.votes} votes</div>
+            </div>
+            <div class="fence-info">
+              <h3>${fence.name}</h3>
+              <p>${fence.desc}</p>
+              <button class="vote-btn ${hasVoted ? (isMyVote ? 'my-vote' : 'has-voted') : 'not-voted'}"
+                      onclick="vote('${fence.id}')"
+                      ${hasVoted && !isMyVote ? 'disabled' : ''}>
+                ${isMyVote ? '✓ Your Vote' : (hasVoted ? 'Vote' : '👍 Vote for this one')}
+              </button>
+            </div>
+
+            <div class="comments-section">
+              <div class="comments-toggle" onclick="toggleComments('${fence.id}')">
+                <h4>💬 Comments</h4>
+                <span class="comments-count">${comments.length}</span>
+              </div>
+              <div class="comments-list" id="comments-${fence.id}">
+                ${comments.map(c => `
+                  <div class="comment">
+                    <div class="comment-header">
+                      <span class="comment-author">${c.author}</span>
+                      <span class="comment-time">${c.time}</span>
+                    </div>
+                    <div class="comment-text">${c.text}</div>
+                    ${c.reaction ? `<span class="comment-reaction">${c.reaction}</span>` : ''}
+                  </div>
+                `).join('')}
+
+                <div class="add-comment">
+                  <input type="text" placeholder="Add your take..." id="comment-input-${fence.id}">
+                  <button onclick="addComment('${fence.id}')">Send</button>
+                </div>
+
+                <div class="reaction-picker">
+                  <button class="reaction-btn" onclick="selectReaction(this, '👍')">👍</button>
+                  <button class="reaction-btn" onclick="selectReaction(this, '🔥')">🔥</button>
+                  <button class="reaction-btn" onclick="selectReaction(this, '😍')">😍</button>
+                  <button class="reaction-btn" onclick="selectReaction(this, '🤔')">🤔</button>
+                  <button class="reaction-btn" onclick="selectReaction(this, '💪')">💪</button>
+                  <button class="reaction-btn" onclick="selectReaction(this, '😂')">😂</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ========== VOTING ==========
+    function vote(fenceId) {
+      if (hasVoted) return;
+
+      hasVoted = true;
+      userVote = fenceId;
+
+      // Update localStorage
+      const saved = JSON.parse(localStorage.getItem(`quiz_${SESSION.id}`) || '{}');
+      saved.hasVoted = true;
+      saved.vote = fenceId;
+      localStorage.setItem(`quiz_${SESSION.id}`, JSON.stringify(saved));
+
+      // Update vote count (in real app, send to server)
+      const fence = FENCE_STYLES.find(f => f.id === fenceId);
+      if (fence) fence.votes++;
+
+      // Re-render
+      renderFenceGrid();
+
+      // Show thank you message
+      showVoteConfirmation(fenceId);
+
+      // Track
+      console.log('Voted for:', fenceId, 'Personality:', userPersonality);
+    }
+
+    function showVoteConfirmation(fenceId) {
+      const fence = FENCE_STYLES.find(f => f.id === fenceId);
+      const messages = {
+        'D': `Great choice! ${SESSION.ownerName} will appreciate your direct opinion.`,
+        'I': `Awesome pick! ${SESSION.ownerName} is going to love hearing from you!`,
+        'S': `Nice vote! ${SESSION.ownerName} will feel good knowing you took the time.`,
+        'C': `Solid choice! You clearly thought this through for ${SESSION.ownerName}.`
+      };
+
+      alert(messages[userPersonality] || `Thanks for voting! ${SESSION.ownerName} will see your pick.`);
+    }
+
+    // ========== COMMENTS ==========
+    function toggleComments(fenceId) {
+      const list = document.getElementById(`comments-${fenceId}`);
+      list.classList.toggle('show');
+    }
+
+    let selectedReaction = null;
+
+    function selectReaction(btn, reaction) {
+      document.querySelectorAll('.reaction-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedReaction = reaction;
+    }
+
+    function addComment(fenceId) {
+      const input = document.getElementById(`comment-input-${fenceId}`);
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Add to sample comments (in real app, send to server)
+      if (!SAMPLE_COMMENTS[fenceId]) SAMPLE_COMMENTS[fenceId] = [];
+      SAMPLE_COMMENTS[fenceId].push({
+        author: 'You',
+        text: text,
+        reaction: selectedReaction,
+        time: 'Just now'
+      });
+
+      input.value = '';
+      selectedReaction = null;
+
+      // Re-render
+      renderFenceGrid();
+
+      // Re-open comments for this card
+      setTimeout(() => {
+        document.getElementById(`comments-${fenceId}`).classList.add('show');
+      }, 100);
+    }
+
+    // ========== INIT ==========
+    initQuiz();
+  </script>
+</body>
+</html>
