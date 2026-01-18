@@ -251,40 +251,295 @@ OUTPUT: Photorealistic image showing the house with new ${roofStyle.name} roof.`
 };
 
 /**
- * HELPER: Detect shot type from image analysis
+ * HELPER: Detect shot type AND fence side from image analysis
+ *
+ * FENCE SIDE is critical for wood privacy fences:
+ * - FRONT (finished side): Flat vertical boards visible, no horizontal rails
+ * - BACK (rail side): Horizontal rails/stringers visible behind vertical boards
+ * - SAME: Metal, vinyl, chain-link, picket - look identical from both sides
  */
 const SHOT_DETECTION_PROMPT = `
-Analyze this photograph and determine the camera angle relative to the fence:
+Analyze this photograph and determine:
 
-1. STRAIGHT-ON: Camera is perpendicular to the fence, fence appears flat/frontal
-2. ANGLED: Camera is at an angle, fence shows perspective (one end closer than other)
-3. CORNER: Multiple fence sections visible meeting at corners
-4. AERIAL: Looking down at the fence from above
-5. NO_FENCE: No fence visible in the image
+1. CAMERA ANGLE relative to the fence:
+   - STRAIGHT-ON: Camera perpendicular to fence, fence appears flat/frontal
+   - ANGLED: Camera at angle, fence shows perspective (one end closer than other)
+   - CORNER: Multiple fence sections visible meeting at corners
+   - AERIAL: Looking down at the fence from above
+   - NO_FENCE: No fence visible in the image
+
+2. FENCE SIDE being viewed (critical for wood fences):
+   - FRONT: The "finished" side - flat vertical boards with NO horizontal rails visible
+           This is what neighbors see, the "good side"
+   - BACK: The "rail" side - horizontal support rails/stringers ARE visible
+          This is what the homeowner sees from their backyard
+   - SAME: Both sides look identical (metal, vinyl, chain-link, picket fences)
+
+How to tell FRONT vs BACK for wood privacy fences:
+- BACK (rail side): You can see 2-3 horizontal wooden rails running across,
+  with vertical boards attached to them. Rails are typically at top, middle, bottom.
+- FRONT (finished side): Only smooth vertical boards visible, no horizontal elements.
 
 Also identify:
 - Fence material (wood, metal, vinyl, chain-link, etc.)
 - Approximate fence height
-- Fence condition (good, weathered, damaged)
+- Fence condition (good, weathered, damaged, rotting)
 - Any gates visible
 - Lighting direction
+- Viewer location (inside backyard, outside/street, neighbor's yard)
 
 Respond in JSON format:
 {
   "shotType": "STRAIGHT-ON|ANGLED|CORNER|AERIAL|NO_FENCE",
+  "fenceSide": "FRONT|BACK|SAME",
+  "viewerLocation": "BACKYARD|STREET|NEIGHBOR|UNKNOWN",
   "fenceMaterial": "string",
   "estimatedHeight": "string",
   "condition": "string",
   "hasGate": boolean,
   "gateLocation": "string or null",
   "lightDirection": "string",
+  "railsVisible": boolean,
   "confidence": 0.0-1.0
 }
 `;
+
+/**
+ * Get the appropriate reference image based on detected fence side
+ */
+function getReferenceSide(analysis, fenceStyle) {
+  // If fence looks the same on both sides, no need to differentiate
+  if (analysis.fenceSide === 'SAME' || fenceStyle.sameBothSides) {
+    return 'front'; // Default to front image
+  }
+
+  // For wood fences, use the detected side
+  if (analysis.fenceSide === 'BACK' || analysis.railsVisible) {
+    return 'back';
+  }
+
+  return 'front';
+}
+
+/**
+ * FENCE SIDE-AWARE PROMPTS
+ * These add specific instructions based on which side of fence is being shown
+ */
+const FENCE_SIDE_INSTRUCTIONS = {
+  front: `
+FENCE SIDE: You are viewing the FRONT (finished/neighbor) side of the fence.
+- Show only smooth, flat vertical boards
+- NO horizontal rails should be visible
+- This is the "good side" that faces outward
+- Posts may have decorative caps visible
+- Clean, uniform appearance`,
+
+  back: `
+FENCE SIDE: You are viewing the BACK (rail/homeowner) side of the fence.
+- Horizontal support rails MUST be visible (typically 2-3 rails)
+- Rails run horizontally at top, middle, and bottom
+- Vertical boards are attached TO these rails
+- Posts are visible with rails connecting them
+- This is what the homeowner sees from their backyard`,
+};
+
+/**
+ * CONDITION-BASED PROMPTS
+ * For replacing damaged/rotting fences, acknowledge the transformation
+ */
+const CONDITION_PROMPTS = {
+  damaged: `
+NOTE: The existing fence appears damaged or deteriorating.
+When replacing it with the new fence:
+- The new fence should look PRISTINE and well-maintained
+- Fill in any gaps or missing sections with the new style
+- The transformation should feel like a dramatic upgrade
+- Customer should feel excited seeing the improvement`,
+
+  rotting: `
+NOTE: The existing fence shows signs of rot and decay.
+The new fence replacement should:
+- Look brand new and freshly installed
+- Show the contrast between old decay and new quality
+- Complete all sections even where old fence is falling apart
+- Represent a complete fresh start for the property`,
+};
+
+/**
+ * SALES-OPTIMIZED PROMPTS
+ * For generating images that help close deals
+ */
+const SALES_PROMPTS = {
+  premium: `
+SALES OPTIMIZATION:
+Generate an image that makes the customer WANT this fence:
+- Lighting should be warm and inviting (golden hour feel if possible)
+- The fence should look substantial and high-quality
+- Emphasize how it completes and enhances the property
+- The yard should feel more private, secure, and valuable
+- This image needs to close a sale`,
+
+  comparison: `
+This image will be shown alongside the customer's current fence.
+Make the improvement OBVIOUS and DRAMATIC:
+- New fence should look pristine
+- Straight lines, consistent color
+- Professional installation appearance
+- The kind of fence that makes neighbors jealous`,
+};
+
+/**
+ * STYLE-SPECIFIC DETAIL PROMPTS
+ * Extra details for each major fence category
+ */
+const STYLE_DETAIL_PROMPTS = {
+  woodPrivacy: `
+WOOD PRIVACY FENCE DETAILS:
+- Vertical boards should be tight together (privacy fence = no gaps)
+- Dog-ear tops: Each board has corners cut at 45° angles
+- Flat tops: Each board is cut straight across
+- Natural wood grain should be visible
+- Color: Natural cedar (golden-brown), pressure-treated (green tint), or stained
+- Posts: 4x4 with flat or pyramid caps, spaced 8ft apart
+- Height: Standard 6ft, boards extend from ground to top rail`,
+
+  woodHorizontal: `
+HORIZONTAL WOOD FENCE DETAILS:
+- Boards run LEFT to RIGHT (horizontal, not vertical)
+- Modern/contemporary style
+- May have small gaps (1/2" - 1") between boards for airflow
+- Boards are typically 1x6 or 1x8 cedar
+- Posts may be hidden or minimal steel posts
+- Creates a sleek, modern aesthetic
+- Often paired with modern architecture`,
+
+  wroughtIron: `
+WROUGHT IRON FENCE DETAILS:
+- Vertical iron bars (pickets) with decorative tops
+- Common finial styles: spear point, fleur-de-lis, ball top
+- Classic black powder-coated finish
+- Pickets evenly spaced (typically 4" apart)
+- Horizontal rails at top and bottom
+- Thicker corner posts with decorative caps
+- Elegant, formal appearance
+- You can see through it - provides security, not privacy`,
+
+  vinyl: `
+VINYL FENCE DETAILS:
+- Solid white (or tan) PVC panels
+- Very clean, bright, uniform appearance
+- Tongue-and-groove boards lock together
+- NO visible wood grain - smooth plastic finish
+- Posts are hollow vinyl with decorative caps
+- Looks almost too perfect - that's correct for vinyl
+- No painting, no staining, no weathering visible`,
+
+  chainLink: `
+CHAIN LINK FENCE DETAILS:
+- Diamond/rhombus pattern woven wire mesh
+- Galvanized = silver metallic color
+- Black vinyl-coated = black color
+- Round metal posts at corners and every 10ft
+- Tension wire runs along top and bottom edges
+- Top rail is a horizontal pipe along the top
+- Very industrial/utilitarian appearance
+- Fully transparent - you see right through it`,
+
+  picket: `
+PICKET FENCE DETAILS:
+- Vertical pickets with pointed or rounded tops
+- Evenly spaced with gaps roughly equal to picket width
+- Usually 3-4 feet tall (shorter than privacy fences)
+- Two horizontal rails (top and bottom)
+- Classic American front-yard look
+- Usually white, can be natural wood
+- Decorative, not for privacy`,
+};
+
+/**
+ * Build complete prompt with all context
+ */
+function buildCompletePrompt(fenceStyle, analysis, options = {}) {
+  const basePrompt = FENCE_PROMPTS[getPromptTypeFromAnalysis(analysis)];
+  const sideInstructions = FENCE_SIDE_INSTRUCTIONS[getReferenceSide(analysis, fenceStyle)] || '';
+  const conditionPrompt = analysis.condition === 'damaged' || analysis.condition === 'rotting'
+    ? CONDITION_PROMPTS[analysis.condition] || CONDITION_PROMPTS.damaged
+    : '';
+  const salesPrompt = options.salesOptimized ? SALES_PROMPTS.premium : '';
+  const styleDetails = getStyleDetailPrompt(fenceStyle);
+
+  return {
+    system: basePrompt.system,
+    prompt: `${basePrompt.prompt(fenceStyle, options.additionalContext)}
+
+${sideInstructions}
+
+${styleDetails}
+
+${conditionPrompt}
+
+${salesPrompt}
+
+REFERENCE FENCE STYLE DETAILS:
+${fenceStyle.promptHints}`.trim(),
+  };
+}
+
+/**
+ * Helper to get prompt type from analysis
+ */
+function getPromptTypeFromAnalysis(analysis) {
+  switch (analysis.shotType) {
+    case 'ANGLED': return 'angledShot';
+    case 'CORNER': return 'cornerShot';
+    case 'NO_FENCE': return 'newInstallation';
+    default: return 'straightShot';
+  }
+}
+
+/**
+ * Helper to get style-specific details
+ */
+function getStyleDetailPrompt(fenceStyle) {
+  const material = fenceStyle.material.toLowerCase();
+
+  if (material.includes('cedar') || material.includes('wood') || material.includes('pine')) {
+    if (fenceStyle.id.includes('horizontal')) {
+      return STYLE_DETAIL_PROMPTS.woodHorizontal;
+    }
+    return STYLE_DETAIL_PROMPTS.woodPrivacy;
+  }
+
+  if (material.includes('iron') || material.includes('steel') || material.includes('aluminum')) {
+    return STYLE_DETAIL_PROMPTS.wroughtIron;
+  }
+
+  if (material.includes('vinyl') || material.includes('pvc')) {
+    return STYLE_DETAIL_PROMPTS.vinyl;
+  }
+
+  if (material.includes('chain')) {
+    return STYLE_DETAIL_PROMPTS.chainLink;
+  }
+
+  if (fenceStyle.id.includes('picket')) {
+    return STYLE_DETAIL_PROMPTS.picket;
+  }
+
+  return '';
+}
 
 module.exports = {
   FENCE_PROMPTS,
   PAINT_PROMPTS,
   ROOFING_PROMPTS,
   SHOT_DETECTION_PROMPT,
+  FENCE_SIDE_INSTRUCTIONS,
+  CONDITION_PROMPTS,
+  SALES_PROMPTS,
+  STYLE_DETAIL_PROMPTS,
+  getReferenceSide,
+  buildCompletePrompt,
+  getPromptTypeFromAnalysis,
+  getStyleDetailPrompt,
 };
