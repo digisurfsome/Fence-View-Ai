@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Austin Home Services Lead Gen</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d5016 100%);
+    }
+    .landing-selector {
+      text-align: center;
+      padding: 60px 40px;
+      max-width: 800px;
+    }
+    .landing-selector h1 {
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .landing-selector p {
+      color: rgba(255,255,255,0.8);
+      font-size: 1.2rem;
+      margin-bottom: 3rem;
+    }
+    .landing-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    .landing-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 30px;
+      text-decoration: none;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .landing-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .landing-card.roof {
+      border-top: 5px solid #1e3a5f;
+    }
+    .landing-card.fence {
+      border-top: 5px solid #2d5016;
+    }
+    .landing-card .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .landing-card h2 {
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    .landing-card p {
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+    .landing-card .cta {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      color: white;
+    }
+    .landing-card.roof .cta {
+      background: #1e3a5f;
+    }
+    .landing-card.fence .cta {
+      background: #2d5016;
+    }
+    .admin-link {
+      margin-top: 3rem;
+    }
+    .admin-link a {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+    }
+    @media (max-width: 600px) {
+      .landing-options {
+        grid-template-columns: 1fr;
+      }
+      .landing-selector h1 {
+        font-size: 1.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-selector">
+    <h1>Austin Home Services</h1>
+    <p>Lead generation landing pages for home improvement services</p>
+
+    <div class="landing-options">
+      <a href="roofing/" class="landing-card roof">
+        <div class="icon">🏠</div>
+        <h2>Roof Damage</h2>
+        <p>Storm damage inspection &amp; insurance claim assistance</p>
+        <span class="cta">View Landing Page →</span>
+      </a>
+
+      <a href="fencing/" class="landing-card fence">
+        <div class="icon">🌳</div>
+        <h2>Fence Visualization</h2>
+        <p>AI-powered fence preview tool for homeowners</p>
+        <span class="cta">View Landing Page →</span>
+      </a>
+    </div>
+
+    <div class="admin-link">
+      <a href="javascript:void(0)" onclick="alert('Total leads: ' + (JSON.parse(localStorage.getItem('leads') || '[]')).length + '\n\nOpen browser console and type viewLeads() to see all leads, or exportLeadsCSV() to download.')">View Captured Leads</a>
+    </div>
+  </div>
+</body>
+</html>

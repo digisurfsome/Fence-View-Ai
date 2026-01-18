@@ -1,0 +1,12 @@
+{
+  "name": "austin-home-services-leads",
+  "version": "1.0.0",
+  "description": "Lead generation system for roofing and fencing services in Austin",
+  "scripts": {
+    "dev": "npx live-server public --port=3000",
+    "build": "echo 'Static site - just deploy public folder'"
+  },
+  "keywords": ["leads", "roofing", "fencing", "austin"],
+  "author": "",
+  "license": "MIT"
+}
