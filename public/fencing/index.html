@@ -111,6 +111,147 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Examples Section */
+    .examples-section {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 80px 0;
+      color: white;
+    }
+    .examples-section h2 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    .section-subtitle {
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      font-size: 1.2rem;
+      margin-bottom: 50px;
+    }
+    .example-demo {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .before-panel, .after-panel {
+      flex: 1;
+      min-width: 300px;
+      max-width: 450px;
+    }
+    .before-panel h3, .after-panel h3 {
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.9);
+    }
+    .example-thumbnails {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .example-thumb {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.3s;
+      border: 3px solid transparent;
+    }
+    .example-thumb:hover {
+      opacity: 0.9;
+    }
+    .example-thumb.active {
+      opacity: 1;
+      border-color: #c9a227;
+    }
+    .before-main, .after-main {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+    .before-main img, .after-main img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      display: block;
+    }
+    .before-main .label, .after-main .label {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .after-main .label {
+      background: linear-gradient(90deg, #4a7c23, #6ba32d);
+    }
+    .arrow-indicator {
+      font-size: 3rem;
+      color: #c9a227;
+      align-self: center;
+      padding-top: 60px;
+    }
+    .style-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .style-btn {
+      padding: 8px 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: transparent;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.3s;
+    }
+    .style-btn:hover {
+      border-color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.1);
+    }
+    .style-btn.active {
+      background: #c9a227;
+      border-color: #c9a227;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+    .demo-note {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 15px;
+      font-style: italic;
+    }
+    .example-cta {
+      text-align: center;
+      margin-top: 50px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .example-cta p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    .example-cta .btn-primary {
+      background: linear-gradient(90deg, #c9a227, #e0b82a);
+      color: #1a1a2e;
+      padding: 16px 40px;
+      font-size: 1.1rem;
+    }
+    @media (max-width: 768px) {
+      .arrow-indicator { display: none; }
+      .example-demo { flex-direction: column; }
+    }
   </style>
 </head>
 <body class="fence">
@@ -219,6 +360,53 @@
             </div>
           </form>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Examples Section -->
+  <section class="examples-section" id="examples">
+    <div class="container">
+      <h2>See It In Action</h2>
+      <p class="section-subtitle">Click any "before" photo to see how AI transforms ugly fences into beautiful ones</p>
+
+      <div class="example-demo">
+        <div class="before-panel">
+          <h3>Before: Pick a Bad Fence</h3>
+          <div class="example-thumbnails">
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" alt="Weathered backyard fence" class="example-thumb active" data-id="1">
+            <img src="https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=400&q=80" alt="Old wooden fence" class="example-thumb" data-id="2">
+            <img src="https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg?w=400" alt="Worn fence" class="example-thumb" data-id="3">
+          </div>
+          <div class="before-main">
+            <img id="beforeImage" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" alt="Before - old fence">
+            <span class="label">BEFORE</span>
+          </div>
+        </div>
+
+        <div class="arrow-indicator">→</div>
+
+        <div class="after-panel">
+          <h3>After: Choose Your Style</h3>
+          <div class="style-selector">
+            <button class="style-btn active" data-style="wood-privacy">Wood Privacy</button>
+            <button class="style-btn" data-style="cedar">Cedar</button>
+            <button class="style-btn" data-style="iron">Wrought Iron</button>
+            <button class="style-btn" data-style="vinyl">Vinyl White</button>
+            <button class="style-btn" data-style="aluminum">Aluminum</button>
+            <button class="style-btn" data-style="horizontal">Horizontal Modern</button>
+          </div>
+          <div class="after-main">
+            <img id="afterImage" src="https://images.unsplash.com/photo-1584738766473-61c083514bf4?w=800&q=80" alt="After - new fence">
+            <span class="label">AFTER</span>
+          </div>
+          <p class="demo-note">* Demo images shown. Your actual results will show YOUR property with the selected fence style.</p>
+        </div>
+      </div>
+
+      <div class="example-cta">
+        <p><strong>Like what you see?</strong> Upload YOUR fence photo and get 12 custom transformations.</p>
+        <a href="#fenceLeadForm" class="btn btn-primary" onclick="document.getElementById('uploadArea').scrollIntoView({behavior: 'smooth'}); return false;">Try It With My Photo</a>
       </div>
     </div>
   </section>
@@ -335,5 +523,41 @@
     });
   </script>
   <script src="../js/form-handler.js"></script>
+  <script>
+    // Example demo interactivity
+    const beforeImages = {
+      '1': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+      '2': 'https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=800&q=80',
+      '3': 'https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg?w=800'
+    };
+
+    // After images - nice fence examples by style
+    const afterImages = {
+      'wood-privacy': 'https://images.unsplash.com/photo-1584738766473-61c083514bf4?w=800&q=80',
+      'cedar': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
+      'iron': 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&q=80',
+      'vinyl': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
+      'aluminum': 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
+      'horizontal': 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80'
+    };
+
+    // Thumbnail click handler
+    document.querySelectorAll('.example-thumb').forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        document.querySelectorAll('.example-thumb').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+        document.getElementById('beforeImage').src = beforeImages[thumb.dataset.id];
+      });
+    });
+
+    // Style button click handler
+    document.querySelectorAll('.style-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('afterImage').src = afterImages[btn.dataset.style];
+      });
+    });
+  </script>
 </body>
 </html>
