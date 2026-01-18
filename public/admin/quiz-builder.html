@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personality Quiz Builder - Admin Framework</title>
+  <style>
+    :root {
+      --primary: #667eea;
+      --dark: #1a1a2e;
+      --accent: #c9a227;
+      --success: #00c853;
+      --warning: #ff9800;
+      --danger: #f44336;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--dark);
+      color: #fff;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { margin-bottom: 10px; }
+    .subtitle { color: rgba(255,255,255,0.6); margin-bottom: 40px; }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    .tab:hover { background: rgba(255,255,255,0.2); }
+    .tab.active { background: var(--primary); }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    .card h2 {
+      color: var(--accent);
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+    }
+    .card h3 {
+      color: rgba(255,255,255,0.8);
+      margin: 20px 0 15px;
+      font-size: 1.1rem;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 1rem;
+    }
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form-group select option { background: var(--dark); color: white; }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, var(--accent), #e0b82a);
+      color: var(--dark);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      margin-left: 10px;
+    }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-small { padding: 8px 16px; font-size: 0.9rem; }
+
+    .help-text {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 5px;
+    }
+
+    /* Dynamic List Styles */
+    .dynamic-list {
+      margin: 20px 0;
+    }
+    .list-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .list-item.question { border-left: 4px solid var(--primary); }
+    .list-item.text-step { border-left: 4px solid var(--success); }
+    .list-item.action-step { border-left: 4px solid var(--warning); }
+    .list-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .list-item-header h4 {
+      color: var(--accent);
+      font-size: 1rem;
+    }
+    .list-item-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .list-item-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-question { background: var(--primary); }
+    .badge-text { background: var(--success); }
+    .badge-action { background: var(--warning); color: var(--dark); }
+
+    /* Options Grid */
+    .option-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .option-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 15px;
+    }
+    .option-card h5 {
+      color: var(--primary);
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+    .option-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .option-row input:first-child { flex: 3; }
+    .option-row input:last-child { flex: 1; }
+
+    /* Flow Builder Visual */
+    .flow-builder {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 30px;
+      margin: 20px 0;
+      overflow-x: auto;
+    }
+    .flow-items {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: max-content;
+    }
+    .flow-item {
+      padding: 15px 20px;
+      border-radius: 10px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .flow-item.intro { background: rgba(255,255,255,0.1); }
+    .flow-item.question { background: var(--primary); }
+    .flow-item.text { background: var(--success); }
+    .flow-item.action { background: var(--warning); color: var(--dark); }
+    .flow-item.result { background: var(--accent); color: var(--dark); }
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+
+    /* Actions Library */
+    .action-template {
+      background: rgba(255,255,255,0.08);
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .action-template.defined {
+      border-style: solid;
+      border-color: var(--warning);
+    }
+
+    /* Split Test Config */
+    .split-test-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    .split-test-row label {
+      flex: 1;
+      color: rgba(255,255,255,0.8);
+    }
+    .split-test-row input, .split-test-row select {
+      width: 100px;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .range-inputs {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .range-inputs span { color: rgba(255,255,255,0.5); }
+
+    /* Preview */
+    .preview-box {
+      background: #fff;
+      color: #333;
+      border-radius: 12px;
+      padding: 30px;
+      margin-top: 20px;
+      min-height: 300px;
+    }
+    .preview-box h3 { color: var(--dark); margin-bottom: 15px; }
+    .preview-conversation {
+      background: #f0f4ff;
+      border-left: 4px solid var(--primary);
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+      color: #555;
+    }
+    .preview-action-box {
+      background: #fff8e1;
+      border: 2px solid var(--warning);
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .preview-option {
+      padding: 15px;
+      margin: 10px 0;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preview-option:hover {
+      border-color: var(--primary);
+      background: #f0f4ff;
+    }
+
+    /* Personality Types Grid */
+    .personality-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .personality-type {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .personality-type h4 { color: var(--accent); margin-bottom: 10px; }
+    .personality-type .code {
+      font-family: monospace;
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    /* Variations */
+    .variations-container {
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 15px;
+    }
+    .variation-item {
+      margin-bottom: 15px;
+    }
+    .variation-item label {
+      display: block;
+      color: var(--primary);
+      font-size: 0.85rem;
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 768px) {
+      .option-grid { grid-template-columns: 1fr; }
+      .personality-grid { grid-template-columns: 1fr 1fr; }
+      .split-test-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Personality Quiz Builder</h1>
+    <p class="subtitle">Framework for adaptive questions, actions, and split testing - the brain administration system</p>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showPanel('flow')">Flow Builder</button>
+      <button class="tab" onclick="showPanel('questions')">Questions</button>
+      <button class="tab" onclick="showPanel('steps')">Steps (Text/Actions)</button>
+      <button class="tab" onclick="showPanel('actions')">Actions Library</button>
+      <button class="tab" onclick="showPanel('types')">Personality Types</button>
+      <button class="tab" onclick="showPanel('split')">Split Testing</button>
+      <button class="tab" onclick="showPanel('preview')">Preview</button>
+    </div>
+
+    <!-- FLOW BUILDER PANEL -->
+    <div class="panel active" id="panel-flow">
+      <div class="card">
+        <h2>Quiz Flow Builder</h2>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Visual overview of your quiz flow. Add questions, text conversations, and actions between them.
+        </p>
+
+        <div class="flow-builder">
+          <div class="flow-items" id="flowVisual">
+            <!-- Dynamically generated -->
+          </div>
+        </div>
+
+        <h3>Quick Add to Flow</h3>
+        <div style="display: flex; gap: 15px; margin-top: 15px;">
+          <button class="btn btn-primary btn-small" onclick="addQuestion()">+ Add Question</button>
+          <button class="btn btn-success btn-small" onclick="addTextStep()">+ Add Text/Conversation</button>
+          <button class="btn btn-small" style="background: var(--warning); color: var(--dark);" onclick="addActionStep()">+ Add Action</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Current Flow Sequence</h2>
+        <p class="help-text" style="margin-bottom: 20px;">Drag to reorder, click to edit. The brain will test different sequences.</p>
+
+        <div class="dynamic-list" id="flowSequence">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTIONS PANEL -->
+    <div class="panel" id="panel-questions">
+      <div class="card">
+        <h2>Questions Library</h2>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Define all your questions here. Each question has 4 options mapping to personality traits.
+          Questions can be adaptive (phrasing changes based on previous answers).
+        </p>
+
+        <button class="btn btn-primary" onclick="addQuestion()">+ Add New Question</button>
+
+        <div class="dynamic-list" id="questionsList" style="margin-top: 20px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- STEPS PANEL -->
+    <div class="panel" id="panel-steps">
+      <div class="card">
+        <h2>Steps Between Questions</h2>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Add text (conversation/talking) or actions between questions. The brain will test different amounts and types.
+        </p>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+          <button class="btn btn-success" onclick="addTextStep()">+ Add Text Step</button>
+          <button class="btn" style="background: var(--warning); color: var(--dark);" onclick="addActionStep()">+ Add Action Step</button>
+        </div>
+
+        <div class="dynamic-list" id="stepsList">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIONS LIBRARY PANEL -->
+    <div class="panel" id="panel-actions">
+      <div class="card">
+        <h2>Actions Library</h2>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Define reusable actions that can happen between questions. Each action has a type, title, description, and implementation details.
+        </p>
+
+        <button class="btn btn-primary" onclick="addActionDefinition()">+ Define New Action</button>
+
+        <div id="actionsLibrary" style="margin-top: 20px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Built-in Action Types</h2>
+        <p class="help-text" style="margin-bottom: 20px;">Reference for available action types</p>
+
+        <div class="option-grid">
+          <div class="option-card">
+            <h5>share_vote</h5>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">User shares link to friends for voting on their fence styles</p>
+          </div>
+          <div class="option-card">
+            <h5>show_results</h5>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Display fence transformation results</p>
+          </div>
+          <div class="option-card">
+            <h5>collect_input</h5>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Gather additional info (email, name, phone, etc.)</p>
+          </div>
+          <div class="option-card">
+            <h5>show_social_proof</h5>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Display testimonials or vote counts</p>
+          </div>
+          <div class="option-card">
+            <h5>trigger_ai</h5>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Have AI respond based on personality type</p>
+          </div>
+          <div class="option-card">
+            <h5>custom</h5>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Define custom behavior with code/config</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERSONALITY TYPES PANEL -->
+    <div class="panel" id="panel-types">
+      <div class="card">
+        <h2>Personality Type Configurations</h2>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Define how to communicate with each personality type after profiling is complete.
+        </p>
+
+        <div class="personality-grid">
+          <div class="personality-type">
+            <h4>DIRECT (D)</h4>
+            <div class="code">D</div>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Fast, decisive, results-focused</p>
+          </div>
+          <div class="personality-type">
+            <h4>INFLUENCER (I)</h4>
+            <div class="code">I</div>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Social, image-conscious, enthusiastic</p>
+          </div>
+          <div class="personality-type">
+            <h4>STEADY (S)</h4>
+            <div class="code">S</div>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Family-first, secure, patient</p>
+          </div>
+          <div class="personality-type">
+            <h4>CONSCIENTIOUS (C)</h4>
+            <div class="code">C</div>
+            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Detail-oriented, quality, ROI-focused</p>
+          </div>
+        </div>
+
+        <div class="option-grid" style="margin-top: 30px;">
+          <div class="option-card">
+            <h5>D - Direct Communication</h5>
+            <div class="form-group">
+              <label>Tone Guidelines</label>
+              <textarea id="toneD">Be direct. Don't waste their time. Lead with results and speed. "Here's what you get, here's how fast."</textarea>
+            </div>
+            <div class="form-group">
+              <label>Example Phrases</label>
+              <textarea id="phrasesD">"Let's get this done."
+"Bottom line:"
+"Here's the fastest path:"
+"No BS - this is what you need."</textarea>
+            </div>
+          </div>
+
+          <div class="option-card">
+            <h5>I - Social Communication</h5>
+            <div class="form-group">
+              <label>Tone Guidelines</label>
+              <textarea id="toneI">Be enthusiastic and social. Paint the picture of how great it'll look. Use words like "amazing," "love," "everyone will notice."</textarea>
+            </div>
+            <div class="form-group">
+              <label>Example Phrases</label>
+              <textarea id="phrasesI">"Your neighbors are going to be jealous!"
+"This is going to look AMAZING."
+"Picture this..."
+"Everyone's going to ask where you got it."</textarea>
+            </div>
+          </div>
+
+          <div class="option-card">
+            <h5>S - Steady Communication</h5>
+            <div class="form-group">
+              <label>Tone Guidelines</label>
+              <textarea id="toneS">Be warm and reassuring. Focus on family, safety, peace of mind. Don't rush them - let them feel comfortable.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Example Phrases</label>
+              <textarea id="phrasesS">"Your family will feel so safe."
+"Take your time - no pressure."
+"This will give you peace of mind."
+"You're making a great choice for your loved ones."</textarea>
+            </div>
+          </div>
+
+          <div class="option-card">
+            <h5>C - Conscientious Communication</h5>
+            <div class="form-group">
+              <label>Tone Guidelines</label>
+              <textarea id="toneC">Provide data, comparisons, specifics. They want to know WHY this is the best choice. Give them facts to justify the decision.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Example Phrases</label>
+              <textarea id="phrasesC">"Here's the data:"
+"Compared to alternatives..."
+"The ROI on this is..."
+"Based on the specs, this is the best value."</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPLIT TESTING PANEL -->
+    <div class="panel" id="panel-split">
+      <div class="card">
+        <h2>Split Testing Configuration</h2>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Configure what the brain should test. It will try all combinations and narrow down based on results.
+        </p>
+
+        <h3>Question Count</h3>
+        <div class="split-test-row">
+          <label>Number of questions to show</label>
+          <div class="range-inputs">
+            <span>Min:</span>
+            <input type="number" id="splitMinQuestions" value="2" min="1" max="10">
+            <span>Max:</span>
+            <input type="number" id="splitMaxQuestions" value="5" min="1" max="10">
+          </div>
+        </div>
+        <p class="help-text">Brain will test showing 2, 3, 4, and 5 questions to find optimal count</p>
+
+        <h3 style="margin-top: 30px;">Conversation Level</h3>
+        <div class="split-test-row">
+          <label>Amount of text/talking between questions</label>
+          <select id="splitConversation">
+            <option value="test_all">Test All Levels</option>
+            <option value="none">None - rapid fire questions</option>
+            <option value="light">Light - brief transitions</option>
+            <option value="medium">Medium - conversational</option>
+            <option value="heavy">Heavy - lots of talking</option>
+          </select>
+        </div>
+
+        <h3 style="margin-top: 30px;">Action Placement</h3>
+        <div class="split-test-row">
+          <label>When to trigger actions (like share/vote)</label>
+          <select id="splitActionPlacement">
+            <option value="test_all">Test All Placements</option>
+            <option value="after_q1">After Question 1</option>
+            <option value="after_q2">After Question 2</option>
+            <option value="after_all">After All Questions</option>
+            <option value="before_q2">Before Question 2</option>
+          </select>
+        </div>
+
+        <h3 style="margin-top: 30px;">Intro Frame</h3>
+        <div class="split-test-row">
+          <label>Show intro/context before questions?</label>
+          <select id="splitIntro">
+            <option value="test">Test With/Without</option>
+            <option value="always">Always Show</option>
+            <option value="never">Never Show</option>
+          </select>
+        </div>
+
+        <h3 style="margin-top: 30px;">Question Adaptation</h3>
+        <div class="split-test-row">
+          <label>Adapt question phrasing based on previous answers?</label>
+          <select id="splitAdaptation">
+            <option value="test">Test With/Without</option>
+            <option value="always">Always Adapt</option>
+            <option value="never">Use Base Questions Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Test URL Generator</h2>
+        <p class="help-text" style="margin-bottom: 20px;">Generate URLs for specific test configurations</p>
+
+        <div class="form-group">
+          <label>Base URL</label>
+          <input type="text" id="splitBaseUrl" value="/fencing/" placeholder="/fencing/">
+        </div>
+
+        <button class="btn btn-primary" onclick="generateTestUrls()">Generate Test URLs</button>
+
+        <div id="testUrlsOutput" style="margin-top: 20px; display: none;">
+          <h3>Generated Test URLs</h3>
+          <div id="testUrlsList" style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-top: 10px; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEW PANEL -->
+    <div class="panel" id="panel-preview">
+      <div class="card">
+        <h2>Live Preview</h2>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+          Test the quiz flow as users will experience it
+        </p>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+          <button class="btn btn-primary" onclick="startPreview()">Start Preview</button>
+          <select id="previewConfig" style="padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+            <option value="full">Full Flow (all questions + steps)</option>
+            <option value="minimal">Minimal (questions only)</option>
+            <option value="q2">2 Questions</option>
+            <option value="q3">3 Questions</option>
+            <option value="q5">5 Questions</option>
+          </select>
+        </div>
+
+        <div class="preview-box" id="previewArea">
+          <p style="color: #999; text-align: center;">Click "Start Preview" to see the quiz flow</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAVE BUTTONS -->
+    <div style="margin-top: 30px; text-align: center;">
+      <button class="btn btn-primary" onclick="saveConfig()">Save All Settings</button>
+      <button class="btn btn-secondary" onclick="loadConfig()">Load Saved</button>
+      <button class="btn btn-secondary" onclick="exportConfig()">Export JSON</button>
+      <button class="btn btn-secondary" onclick="importConfig()">Import JSON</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // DATA STRUCTURE
+    // ============================================
+    let quizConfig = {
+      intro: {
+        enabled: true,
+        headline: "Help us find your perfect match",
+        story: "Every homeowner has different priorities. Some want to get things done fast, others want to make sure every detail is perfect.\n\nTo show you fences that actually fit YOUR style (not just generic options), we need to understand what matters most to you. Takes 30 seconds.",
+        why: "So we can show you options that actually fit your lifestyle"
+      },
+      questions: [
+        {
+          id: 'q1',
+          text: "Looking at these fence styles, which ONE speaks to you most? (Don't overthink it - go with your gut)",
+          adaptive: false,
+          variations: {},
+          options: [
+            { text: "The one that looks solid and gets the job done", code: "D" },
+            { text: "The one my neighbors would compliment", code: "I" },
+            { text: "The one that feels safe and cozy for my family", code: "S" },
+            { text: "The one with the best materials and craftsmanship", code: "C" }
+          ]
+        },
+        {
+          id: 'q2',
+          text: "If you had to pick your TOP priority for this fence project, it would be...",
+          adaptive: true,
+          variations: {
+            D: "You like things that work. So what's the #1 thing this fence needs to do for you?",
+            I: "You've got good taste! When people see this fence, what do you want them to think?",
+            S: "Family first - love that. What would make your family happiest about this fence?",
+            C: "Quality matters. What's the most important factor you'll be evaluating?"
+          },
+          options: [
+            { text: "Speed - I want this done ASAP", code: "D" },
+            { text: "Looks - It needs to look amazing", code: "I" },
+            { text: "Peace of mind - Safe and secure", code: "S" },
+            { text: "Value - Best quality for the price", code: "C" }
+          ]
+        },
+        {
+          id: 'q3',
+          text: "Last one! When the fence is finally up, what will make you think 'Yes, this was worth it'?",
+          adaptive: true,
+          variations: {
+            D: "You clearly know what you want. One last thing - when this is done, what's the #1 sign of success?",
+            I: "You've got vision! When friends come over and see this fence, what do you want them to say?",
+            S: "Your family's lucky to have you thinking this through. What moment will tell you this was the right call?",
+            C: "You do your homework - smart. What's the one thing that would make you 100% confident this was the right choice?"
+          },
+          options: [
+            { text: "It's done and I can move on to other things", code: "D" },
+            { text: "People notice and tell me it looks great", code: "I" },
+            { text: "My family loves it and feels at home", code: "S" },
+            { text: "I know I got the best deal and quality", code: "C" }
+          ]
+        }
+      ],
+      steps: [
+        {
+          id: 'step1',
+          type: 'text',
+          position: 'before_q2',
+          content: "Great choice! That tells us a lot about what matters to you.",
+          level: 'light'
+        }
+      ],
+      actions: [
+        {
+          id: 'action_share_vote',
+          type: 'share_vote',
+          title: 'Share for Friend Votes',
+          description: 'Let your friends vote on which fence style suits you best',
+          buttonText: 'Get Friends\' Opinions',
+          config: {
+            shareMessage: "Help me pick my new fence! Vote here:",
+            incentive: "See what your friends really think!"
+          }
+        }
+      ],
+      flow: ['intro', 'q1', 'step1', 'q2', 'q3', 'action_share_vote', 'result'],
+      personalityTones: {
+        D: {
+          tone: "Be direct. Don't waste their time. Lead with results and speed.",
+          phrases: "\"Let's get this done.\"\n\"Bottom line:\"\n\"Here's the fastest path:\""
+        },
+        I: {
+          tone: "Be enthusiastic and social. Paint the picture of how great it'll look.",
+          phrases: "\"Your neighbors are going to be jealous!\"\n\"This is going to look AMAZING.\""
+        },
+        S: {
+          tone: "Be warm and reassuring. Focus on family, safety, peace of mind.",
+          phrases: "\"Your family will feel so safe.\"\n\"Take your time - no pressure.\""
+        },
+        C: {
+          tone: "Provide data, comparisons, specifics. Give them facts.",
+          phrases: "\"Here's the data:\"\n\"Compared to alternatives...\"\n\"The ROI on this is...\""
+        }
+      },
+      splitTest: {
+        minQuestions: 2,
+        maxQuestions: 5,
+        conversationLevel: 'test_all',
+        actionPlacement: 'test_all',
+        showIntro: 'test',
+        useAdaptation: 'test'
+      }
+    };
+
+    // ============================================
+    // TAB SWITCHING
+    // ============================================
+    function showPanel(id) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('panel-' + id).classList.add('active');
+      event.target.classList.add('active');
+
+      if (id === 'flow') renderFlowBuilder();
+      if (id === 'questions') renderQuestionsList();
+      if (id === 'steps') renderStepsList();
+      if (id === 'actions') renderActionsLibrary();
+    }
+
+    // ============================================
+    // FLOW BUILDER
+    // ============================================
+    function renderFlowBuilder() {
+      const visual = document.getElementById('flowVisual');
+      const sequence = document.getElementById('flowSequence');
+
+      // Visual flow
+      let visualHtml = '';
+      quizConfig.flow.forEach((item, index) => {
+        let itemClass = 'flow-item ';
+        let label = item;
+
+        if (item === 'intro') { itemClass += 'intro'; label = 'Intro'; }
+        else if (item === 'result') { itemClass += 'result'; label = 'Result'; }
+        else if (item.startsWith('q')) {
+          itemClass += 'question';
+          const qNum = item.replace('q', '');
+          label = 'Q' + qNum;
+        }
+        else if (item.startsWith('step')) {
+          const step = quizConfig.steps.find(s => s.id === item);
+          if (step && step.type === 'text') { itemClass += 'text'; label = 'Text'; }
+          else { itemClass += 'action'; label = 'Action'; }
+        }
+        else if (item.startsWith('action')) {
+          itemClass += 'action';
+          const action = quizConfig.actions.find(a => a.id === item);
+          label = action ? action.title.substring(0, 10) + '...' : 'Action';
+        }
+
+        visualHtml += `<div class="${itemClass}">${label}</div>`;
+        if (index < quizConfig.flow.length - 1) {
+          visualHtml += '<span class="flow-arrow">→</span>';
+        }
+      });
+      visual.innerHTML = visualHtml;
+
+      // Sequence list
+      let seqHtml = '';
+      quizConfig.flow.forEach((item, index) => {
+        let itemType = 'intro';
+        let itemTitle = item;
+        let badgeClass = 'badge-text';
+
+        if (item === 'intro') {
+          itemTitle = 'Introduction Frame';
+          badgeClass = 'badge-text';
+        }
+        else if (item === 'result') {
+          itemTitle = 'Show Result & Personality';
+          badgeClass = 'badge-action';
+        }
+        else if (item.startsWith('q')) {
+          const q = quizConfig.questions.find(q => q.id === item);
+          itemTitle = q ? `Question: "${q.text.substring(0, 50)}..."` : item;
+          badgeClass = 'badge-question';
+          itemType = 'question';
+        }
+        else if (item.startsWith('step')) {
+          const step = quizConfig.steps.find(s => s.id === item);
+          if (step) {
+            itemTitle = step.type === 'text' ? `Text: "${step.content.substring(0, 40)}..."` : `Step: ${step.id}`;
+            badgeClass = step.type === 'text' ? 'badge-text' : 'badge-action';
+            itemType = step.type === 'text' ? 'text-step' : 'action-step';
+          }
+        }
+        else if (item.startsWith('action')) {
+          const action = quizConfig.actions.find(a => a.id === item);
+          itemTitle = action ? `Action: ${action.title}` : item;
+          badgeClass = 'badge-action';
+          itemType = 'action-step';
+        }
+
+        seqHtml += `
+          <div class="list-item ${itemType}">
+            <div class="list-item-header">
+              <div>
+                <span class="list-item-badge ${badgeClass}">${index + 1}</span>
+                <span style="margin-left: 10px;">${itemTitle}</span>
+              </div>
+              <div class="list-item-actions">
+                ${index > 0 ? `<button class="btn btn-small btn-secondary" onclick="moveFlowItem(${index}, -1)">↑</button>` : ''}
+                ${index < quizConfig.flow.length - 1 ? `<button class="btn btn-small btn-secondary" onclick="moveFlowItem(${index}, 1)">↓</button>` : ''}
+                ${item !== 'intro' && item !== 'result' ? `<button class="btn btn-small btn-danger" onclick="removeFlowItem(${index})">×</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      sequence.innerHTML = seqHtml;
+    }
+
+    function moveFlowItem(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= quizConfig.flow.length) return;
+      const item = quizConfig.flow.splice(index, 1)[0];
+      quizConfig.flow.splice(newIndex, 0, item);
+      renderFlowBuilder();
+    }
+
+    function removeFlowItem(index) {
+      quizConfig.flow.splice(index, 1);
+      renderFlowBuilder();
+    }
+
+    // ============================================
+    // QUESTIONS
+    // ============================================
+    function addQuestion() {
+      const newId = 'q' + (quizConfig.questions.length + 1);
+      quizConfig.questions.push({
+        id: newId,
+        text: "New question - click to edit",
+        adaptive: false,
+        variations: { D: '', I: '', S: '', C: '' },
+        options: [
+          { text: "Option 1", code: "D" },
+          { text: "Option 2", code: "I" },
+          { text: "Option 3", code: "S" },
+          { text: "Option 4", code: "C" }
+        ]
+      });
+
+      // Add to flow before result
+      const resultIndex = quizConfig.flow.indexOf('result');
+      if (resultIndex > -1) {
+        quizConfig.flow.splice(resultIndex, 0, newId);
+      } else {
+        quizConfig.flow.push(newId);
+      }
+
+      renderFlowBuilder();
+      renderQuestionsList();
+      showPanel('questions');
+    }
+
+    function renderQuestionsList() {
+      const container = document.getElementById('questionsList');
+      let html = '';
+
+      quizConfig.questions.forEach((q, qIndex) => {
+        html += `
+          <div class="list-item question">
+            <div class="list-item-header">
+              <h4>Question ${qIndex + 1} (${q.id})</h4>
+              <div class="list-item-actions">
+                <button class="btn btn-small btn-danger" onclick="removeQuestion(${qIndex})">Delete</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Question Text</label>
+              <textarea onchange="updateQuestion(${qIndex}, 'text', this.value)">${q.text}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" ${q.adaptive ? 'checked' : ''} onchange="updateQuestion(${qIndex}, 'adaptive', this.checked)">
+                Adaptive (phrasing changes based on previous answers)
+              </label>
+            </div>
+
+            ${q.adaptive ? `
+              <div class="variations-container">
+                <h4 style="color: var(--accent); margin-bottom: 15px;">Question Variations</h4>
+                <div class="variation-item">
+                  <label>If previous = D (Direct)</label>
+                  <textarea onchange="updateQuestionVariation(${qIndex}, 'D', this.value)">${q.variations.D || ''}</textarea>
+                </div>
+                <div class="variation-item">
+                  <label>If previous = I (Influencer)</label>
+                  <textarea onchange="updateQuestionVariation(${qIndex}, 'I', this.value)">${q.variations.I || ''}</textarea>
+                </div>
+                <div class="variation-item">
+                  <label>If previous = S (Steady)</label>
+                  <textarea onchange="updateQuestionVariation(${qIndex}, 'S', this.value)">${q.variations.S || ''}</textarea>
+                </div>
+                <div class="variation-item">
+                  <label>If previous = C (Conscientious)</label>
+                  <textarea onchange="updateQuestionVariation(${qIndex}, 'C', this.value)">${q.variations.C || ''}</textarea>
+                </div>
+              </div>
+            ` : ''}
+
+            <h4 style="margin: 20px 0 15px; color: rgba(255,255,255,0.8);">Answer Options (4 required)</h4>
+            <div class="option-grid">
+              ${q.options.map((opt, oIndex) => `
+                <div class="option-card">
+                  <h5>Option ${oIndex + 1}</h5>
+                  <div class="option-row">
+                    <input type="text" value="${opt.text}" placeholder="Answer text" onchange="updateQuestionOption(${qIndex}, ${oIndex}, 'text', this.value)">
+                    <input type="text" value="${opt.code}" placeholder="Code" onchange="updateQuestionOption(${qIndex}, ${oIndex}, 'code', this.value)">
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function updateQuestion(index, field, value) {
+      quizConfig.questions[index][field] = value;
+    }
+
+    function updateQuestionVariation(qIndex, trait, value) {
+      quizConfig.questions[qIndex].variations[trait] = value;
+    }
+
+    function updateQuestionOption(qIndex, oIndex, field, value) {
+      quizConfig.questions[qIndex].options[oIndex][field] = value;
+    }
+
+    function removeQuestion(index) {
+      const qId = quizConfig.questions[index].id;
+      quizConfig.questions.splice(index, 1);
+      quizConfig.flow = quizConfig.flow.filter(f => f !== qId);
+      renderQuestionsList();
+      renderFlowBuilder();
+    }
+
+    // ============================================
+    // STEPS (Text / Actions between questions)
+    // ============================================
+    function addTextStep() {
+      const newId = 'step' + (quizConfig.steps.length + 1);
+      quizConfig.steps.push({
+        id: newId,
+        type: 'text',
+        position: 'flexible',
+        content: "Enter conversation text here...",
+        level: 'light'
+      });
+
+      // Add to flow before result
+      const resultIndex = quizConfig.flow.indexOf('result');
+      if (resultIndex > -1) {
+        quizConfig.flow.splice(resultIndex, 0, newId);
+      }
+
+      renderStepsList();
+      renderFlowBuilder();
+    }
+
+    function addActionStep() {
+      // If no actions defined, prompt to create one first
+      if (quizConfig.actions.length === 0) {
+        alert('Please define an action in the Actions Library first');
+        showPanel('actions');
+        return;
+      }
+
+      const actionId = quizConfig.actions[0].id;
+
+      // Add to flow before result
+      const resultIndex = quizConfig.flow.indexOf('result');
+      if (resultIndex > -1 && !quizConfig.flow.includes(actionId)) {
+        quizConfig.flow.splice(resultIndex, 0, actionId);
+      }
+
+      renderStepsList();
+      renderFlowBuilder();
+    }
+
+    function renderStepsList() {
+      const container = document.getElementById('stepsList');
+      let html = '<h3>Text Steps</h3>';
+
+      quizConfig.steps.filter(s => s.type === 'text').forEach((step, index) => {
+        html += `
+          <div class="list-item text-step">
+            <div class="list-item-header">
+              <h4>${step.id}</h4>
+              <div class="list-item-actions">
+                <button class="btn btn-small btn-danger" onclick="removeStep('${step.id}')">Delete</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Conversation Text</label>
+              <textarea onchange="updateStep('${step.id}', 'content', this.value)">${step.content}</textarea>
+              <p class="help-text">What the AI says to the user between questions</p>
+            </div>
+
+            <div class="form-group">
+              <label>Conversation Level</label>
+              <select onchange="updateStep('${step.id}', 'level', this.value)">
+                <option value="light" ${step.level === 'light' ? 'selected' : ''}>Light - brief transition</option>
+                <option value="medium" ${step.level === 'medium' ? 'selected' : ''}>Medium - conversational</option>
+                <option value="heavy" ${step.level === 'heavy' ? 'selected' : ''}>Heavy - lots of talking</option>
+              </select>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '<h3 style="margin-top: 30px;">Action Steps in Flow</h3>';
+      quizConfig.actions.forEach(action => {
+        const inFlow = quizConfig.flow.includes(action.id);
+        html += `
+          <div class="list-item action-step" style="opacity: ${inFlow ? '1' : '0.5'}">
+            <div class="list-item-header">
+              <h4>${action.title}</h4>
+              <div class="list-item-actions">
+                ${!inFlow ? `<button class="btn btn-small btn-success" onclick="addActionToFlow('${action.id}')">Add to Flow</button>` : ''}
+                ${inFlow ? `<button class="btn btn-small btn-danger" onclick="removeFromFlow('${action.id}')">Remove from Flow</button>` : ''}
+              </div>
+            </div>
+            <p style="color: rgba(255,255,255,0.6);">${action.description}</p>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function updateStep(id, field, value) {
+      const step = quizConfig.steps.find(s => s.id === id);
+      if (step) step[field] = value;
+    }
+
+    function removeStep(id) {
+      quizConfig.steps = quizConfig.steps.filter(s => s.id !== id);
+      quizConfig.flow = quizConfig.flow.filter(f => f !== id);
+      renderStepsList();
+      renderFlowBuilder();
+    }
+
+    function addActionToFlow(actionId) {
+      const resultIndex = quizConfig.flow.indexOf('result');
+      if (resultIndex > -1 && !quizConfig.flow.includes(actionId)) {
+        quizConfig.flow.splice(resultIndex, 0, actionId);
+      }
+      renderStepsList();
+      renderFlowBuilder();
+    }
+
+    function removeFromFlow(id) {
+      quizConfig.flow = quizConfig.flow.filter(f => f !== id);
+      renderStepsList();
+      renderFlowBuilder();
+    }
+
+    // ============================================
+    // ACTIONS LIBRARY
+    // ============================================
+    function addActionDefinition() {
+      const newId = 'action_' + Date.now();
+      quizConfig.actions.push({
+        id: newId,
+        type: 'custom',
+        title: 'New Action',
+        description: 'Describe what this action does',
+        buttonText: 'Action Button',
+        config: {}
+      });
+      renderActionsLibrary();
+    }
+
+    function renderActionsLibrary() {
+      const container = document.getElementById('actionsLibrary');
+      let html = '';
+
+      quizConfig.actions.forEach((action, index) => {
+        html += `
+          <div class="action-template defined">
+            <div class="list-item-header">
+              <h4 style="color: var(--warning);">${action.title}</h4>
+              <div class="list-item-actions">
+                <button class="btn btn-small btn-danger" onclick="removeAction(${index})">Delete</button>
+              </div>
+            </div>
+
+            <div class="option-grid" style="margin-top: 15px;">
+              <div class="form-group">
+                <label>Action ID</label>
+                <input type="text" value="${action.id}" readonly style="opacity: 0.6;">
+              </div>
+              <div class="form-group">
+                <label>Action Type</label>
+                <select onchange="updateAction(${index}, 'type', this.value)">
+                  <option value="share_vote" ${action.type === 'share_vote' ? 'selected' : ''}>Share for Votes</option>
+                  <option value="show_results" ${action.type === 'show_results' ? 'selected' : ''}>Show Results</option>
+                  <option value="collect_input" ${action.type === 'collect_input' ? 'selected' : ''}>Collect Input</option>
+                  <option value="show_social_proof" ${action.type === 'show_social_proof' ? 'selected' : ''}>Show Social Proof</option>
+                  <option value="trigger_ai" ${action.type === 'trigger_ai' ? 'selected' : ''}>Trigger AI Response</option>
+                  <option value="custom" ${action.type === 'custom' ? 'selected' : ''}>Custom</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Title (internal reference)</label>
+              <input type="text" value="${action.title}" onchange="updateAction(${index}, 'title', this.value)">
+            </div>
+
+            <div class="form-group">
+              <label>Description (what this action does)</label>
+              <textarea onchange="updateAction(${index}, 'description', this.value)">${action.description}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Button Text (what user sees)</label>
+              <input type="text" value="${action.buttonText || ''}" onchange="updateAction(${index}, 'buttonText', this.value)">
+            </div>
+
+            <div class="form-group">
+              <label>Configuration (JSON)</label>
+              <textarea onchange="updateActionConfig(${index}, this.value)" style="font-family: monospace; font-size: 0.85rem;">${JSON.stringify(action.config || {}, null, 2)}</textarea>
+              <p class="help-text">Action-specific settings in JSON format</p>
+            </div>
+          </div>
+        `;
+      });
+
+      if (quizConfig.actions.length === 0) {
+        html = '<p style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px;">No actions defined yet. Click "Define New Action" to create one.</p>';
+      }
+
+      container.innerHTML = html;
+    }
+
+    function updateAction(index, field, value) {
+      quizConfig.actions[index][field] = value;
+      renderActionsLibrary();
+    }
+
+    function updateActionConfig(index, value) {
+      try {
+        quizConfig.actions[index].config = JSON.parse(value);
+      } catch (e) {
+        // Invalid JSON, ignore
+      }
+    }
+
+    function removeAction(index) {
+      const actionId = quizConfig.actions[index].id;
+      quizConfig.actions.splice(index, 1);
+      quizConfig.flow = quizConfig.flow.filter(f => f !== actionId);
+      renderActionsLibrary();
+      renderFlowBuilder();
+    }
+
+    // ============================================
+    // SPLIT TEST URL GENERATOR
+    // ============================================
+    function generateTestUrls() {
+      const baseUrl = document.getElementById('splitBaseUrl').value;
+      const minQ = parseInt(document.getElementById('splitMinQuestions').value);
+      const maxQ = parseInt(document.getElementById('splitMaxQuestions').value);
+      const conversation = document.getElementById('splitConversation').value;
+      const actionPlacement = document.getElementById('splitActionPlacement').value;
+
+      let urls = [];
+
+      // Generate question count variations
+      for (let q = minQ; q <= maxQ; q++) {
+        // Conversation levels
+        const convLevels = conversation === 'test_all' ? ['none', 'light', 'medium', 'heavy'] : [conversation];
+
+        convLevels.forEach(conv => {
+          // Action placements
+          const placements = actionPlacement === 'test_all' ? ['after_q1', 'after_q2', 'after_all'] : [actionPlacement];
+
+          placements.forEach(place => {
+            const url = `${baseUrl}?questions=${q}&conv=${conv}&action=${place}`;
+            urls.push(url);
+          });
+        });
+      }
+
+      const output = document.getElementById('testUrlsOutput');
+      const list = document.getElementById('testUrlsList');
+
+      output.style.display = 'block';
+      list.innerHTML = urls.map(url => `<div style="margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 4px;">${url}</div>`).join('');
+    }
+
+    // ============================================
+    // PREVIEW
+    // ============================================
+    let previewState = {
+      step: 0,
+      answers: [],
+      currentFlow: []
+    };
+
+    function startPreview() {
+      const config = document.getElementById('previewConfig').value;
+
+      // Build flow based on config
+      let flow = ['intro'];
+      let questionCount = quizConfig.questions.length;
+
+      if (config === 'minimal') {
+        flow = quizConfig.questions.map(q => q.id);
+      } else if (config === 'q2') {
+        questionCount = 2;
+      } else if (config === 'q3') {
+        questionCount = 3;
+      } else if (config === 'q5') {
+        questionCount = Math.min(5, quizConfig.questions.length);
+      }
+
+      if (config !== 'minimal') {
+        // Add questions with steps between
+        for (let i = 0; i < questionCount && i < quizConfig.questions.length; i++) {
+          flow.push(quizConfig.questions[i].id);
+
+          // Add text steps after each question (except last)
+          if (i < questionCount - 1 && config === 'full') {
+            const textStep = quizConfig.steps.find(s => s.type === 'text');
+            if (textStep) flow.push(textStep.id);
+          }
+        }
+
+        // Add action if in full flow
+        if (config === 'full' && quizConfig.actions.length > 0) {
+          flow.push(quizConfig.actions[0].id);
+        }
+      }
+
+      flow.push('result');
+
+      previewState = {
+        step: 0,
+        answers: [],
+        currentFlow: flow
+      };
+
+      renderPreviewStep();
+    }
+
+    function renderPreviewStep() {
+      const area = document.getElementById('previewArea');
+      const currentItem = previewState.currentFlow[previewState.step];
+
+      if (currentItem === 'intro') {
+        area.innerHTML = `
+          <h3>${quizConfig.intro.headline}</h3>
+          <p style="margin: 15px 0; color: #555;">${quizConfig.intro.story.replace(/\n/g, '<br>')}</p>
+          <p style="color: #888; font-size: 0.9rem;">${quizConfig.intro.why}</p>
+          <button onclick="nextPreviewStep()" style="margin-top: 20px; padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">Let's Go →</button>
+        `;
+      }
+      else if (currentItem.startsWith('q')) {
+        const q = quizConfig.questions.find(q => q.id === currentItem);
+        if (!q) { nextPreviewStep(); return; }
+
+        // Determine question text (adaptive or base)
+        let questionText = q.text;
+        if (q.adaptive && previewState.answers.length > 0) {
+          const lastAnswer = previewState.answers[previewState.answers.length - 1];
+          const dominant = getDominantTrait(previewState.answers);
+          if (q.variations[dominant]) {
+            questionText = q.variations[dominant];
+          }
+        }
+
+        area.innerHTML = `
+          ${q.adaptive && previewState.answers.length > 0 ? '<p style="color: #888; font-size: 0.85rem; margin-bottom: 10px;">✨ Adapted based on your previous answer</p>' : ''}
+          <h3 style="color: #333;">${questionText}</h3>
+          <div style="margin-top: 20px;">
+            ${q.options.map((opt, i) => `
+              <div class="preview-option" onclick="selectPreviewAnswer('${opt.code}')">
+                ${opt.text}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      else if (currentItem.startsWith('step')) {
+        const step = quizConfig.steps.find(s => s.id === currentItem);
+        if (!step) { nextPreviewStep(); return; }
+
+        area.innerHTML = `
+          <div class="preview-conversation">
+            <p>${step.content}</p>
+          </div>
+          <button onclick="nextPreviewStep()" style="margin-top: 15px; padding: 10px 20px; background: #00c853; color: white; border: none; border-radius: 8px; cursor: pointer;">Continue →</button>
+        `;
+      }
+      else if (currentItem.startsWith('action')) {
+        const action = quizConfig.actions.find(a => a.id === currentItem);
+        if (!action) { nextPreviewStep(); return; }
+
+        area.innerHTML = `
+          <div class="preview-action-box">
+            <h3 style="color: #333; margin-bottom: 10px;">Action: ${action.title}</h3>
+            <p style="color: #666; margin-bottom: 20px;">${action.description}</p>
+            <button onclick="nextPreviewStep()" style="padding: 15px 30px; background: #ff9800; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1.1rem; font-weight: bold;">
+              ${action.buttonText || 'Continue'}
+            </button>
+          </div>
+        `;
+      }
+      else if (currentItem === 'result') {
+        const dominant = getDominantTrait(previewState.answers);
+        const tone = quizConfig.personalityTones[dominant] || { tone: '', phrases: '' };
+
+        area.innerHTML = `
+          <h3 style="color: #00c853;">Personality Profile Complete!</h3>
+          <p style="margin: 15px 0;"><strong>Answer Sequence:</strong> ${previewState.answers.join(' → ')}</p>
+          <p><strong>Dominant Type:</strong> ${dominant} (${getTypeName(dominant)})</p>
+          <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin-top: 20px;">
+            <h4 style="color: #333;">AI Communication Style:</h4>
+            <p style="margin: 10px 0; color: #555;">${tone.tone}</p>
+            <h4 style="color: #333; margin-top: 15px;">Example Phrases:</h4>
+            <pre style="background: #fff; padding: 15px; border-radius: 8px; color: #333; font-size: 0.9rem; white-space: pre-wrap;">${tone.phrases}</pre>
+          </div>
+          <button onclick="startPreview()" style="margin-top: 20px; padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">Try Again</button>
+        `;
+      }
+    }
+
+    function selectPreviewAnswer(code) {
+      previewState.answers.push(code);
+      nextPreviewStep();
+    }
+
+    function nextPreviewStep() {
+      previewState.step++;
+      if (previewState.step >= previewState.currentFlow.length) {
+        previewState.step = previewState.currentFlow.length - 1;
+      }
+      renderPreviewStep();
+    }
+
+    function getDominantTrait(answers) {
+      if (answers.length === 0) return 'D';
+      const counts = {};
+      answers.forEach(a => counts[a] = (counts[a] || 0) + 1);
+      return Object.keys(counts).reduce((a, b) => counts[a] >= counts[b] ? a : b);
+    }
+
+    function getTypeName(code) {
+      const names = { D: 'Direct', I: 'Influencer', S: 'Steady', C: 'Conscientious' };
+      return names[code] || code;
+    }
+
+    // ============================================
+    // SAVE / LOAD / EXPORT
+    // ============================================
+    function saveConfig() {
+      // Gather personality tones from form
+      ['D', 'I', 'S', 'C'].forEach(code => {
+        const toneEl = document.getElementById('tone' + code);
+        const phrasesEl = document.getElementById('phrases' + code);
+        if (toneEl && phrasesEl) {
+          quizConfig.personalityTones[code] = {
+            tone: toneEl.value,
+            phrases: phrasesEl.value
+          };
+        }
+      });
+
+      // Gather split test settings
+      quizConfig.splitTest = {
+        minQuestions: parseInt(document.getElementById('splitMinQuestions').value),
+        maxQuestions: parseInt(document.getElementById('splitMaxQuestions').value),
+        conversationLevel: document.getElementById('splitConversation').value,
+        actionPlacement: document.getElementById('splitActionPlacement').value,
+        showIntro: document.getElementById('splitIntro').value,
+        useAdaptation: document.getElementById('splitAdaptation').value
+      };
+
+      localStorage.setItem('quiz_config_v2', JSON.stringify(quizConfig));
+      alert('Configuration saved!');
+    }
+
+    function loadConfig() {
+      const saved = localStorage.getItem('quiz_config_v2');
+      if (!saved) {
+        alert('No saved configuration found');
+        return;
+      }
+
+      quizConfig = JSON.parse(saved);
+
+      // Populate personality tones
+      ['D', 'I', 'S', 'C'].forEach(code => {
+        const tone = quizConfig.personalityTones[code];
+        if (tone) {
+          const toneEl = document.getElementById('tone' + code);
+          const phrasesEl = document.getElementById('phrases' + code);
+          if (toneEl) toneEl.value = tone.tone;
+          if (phrasesEl) phrasesEl.value = tone.phrases;
+        }
+      });
+
+      // Populate split test
+      if (quizConfig.splitTest) {
+        document.getElementById('splitMinQuestions').value = quizConfig.splitTest.minQuestions;
+        document.getElementById('splitMaxQuestions').value = quizConfig.splitTest.maxQuestions;
+        document.getElementById('splitConversation').value = quizConfig.splitTest.conversationLevel;
+        document.getElementById('splitActionPlacement').value = quizConfig.splitTest.actionPlacement;
+        document.getElementById('splitIntro').value = quizConfig.splitTest.showIntro;
+        document.getElementById('splitAdaptation').value = quizConfig.splitTest.useAdaptation;
+      }
+
+      // Re-render
+      renderFlowBuilder();
+      alert('Configuration loaded!');
+    }
+
+    function exportConfig() {
+      saveConfig();
+      const blob = new Blob([JSON.stringify(quizConfig, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quiz_config.json';
+      a.click();
+    }
+
+    function importConfig() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            quizConfig = JSON.parse(event.target.result);
+            localStorage.setItem('quiz_config_v2', JSON.stringify(quizConfig));
+            loadConfig();
+            alert('Configuration imported successfully!');
+          } catch (err) {
+            alert('Error importing configuration: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    // ============================================
+    // INIT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Try to load saved config
+      const saved = localStorage.getItem('quiz_config_v2');
+      if (saved) {
+        try {
+          quizConfig = JSON.parse(saved);
+        } catch (e) {}
+      }
+
+      renderFlowBuilder();
+    });
+  </script>
+</body>
+</html>
