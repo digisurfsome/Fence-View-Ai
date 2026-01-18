@@ -4,6 +4,7 @@
   "description": "AI-powered fence visualization and home services lead generation",
   "main": "src/services/transformation-api.js",
   "scripts": {
+    "start": "node server.js",
     "dev": "npx live-server public --port=3000",
     "build": "echo 'Static site - just deploy public folder'",
     "test:list": "node src/test-transformation.js list",
