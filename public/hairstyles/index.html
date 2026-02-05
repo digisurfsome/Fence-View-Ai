@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f0f23">
   <title>What Haircut Looks Best On You? | AI Hairstyle Try-On</title>
   <meta name="description" content="Upload a selfie and AI analyzes your face shape to find your most flattering hairstyle. Try on 20+ styles, give friends funny haircuts, and share the results!">
   <meta property="og:title" content="What Haircut Looks Best On You?">
@@ -884,21 +887,291 @@
       text-decoration: none;
     }
 
-    /* ========== RESPONSIVE ========== */
+    /* ========== RESPONSIVE: TABLET (max 900px) ========== */
     @media (max-width: 900px) {
       .hero-container {
         grid-template-columns: 1fr;
-        gap: 40px;
+        gap: 30px;
       }
-      .hero-left h1 {
-        font-size: 2rem;
-        text-align: center;
-      }
-      .hero-left .subhead { text-align: center; }
+      .hero { min-height: auto; padding: 40px 20px; }
+      .hero-left h1 { font-size: 2rem; text-align: center; }
+      .hero-left .subhead { text-align: center; font-size: 1.05rem; }
       .badge-row { justify-content: center; }
-      .mode-toggle { justify-content: center; }
+      .mode-toggle { justify-content: center; flex-wrap: wrap; }
       .feature-list { display: none; }
+      .hero-right { padding: 30px 20px; }
       .unlock-banner { flex-direction: column; text-align: center; }
+      .results-header h2 { font-size: 1.6rem; }
+    }
+
+    /* ========== RESPONSIVE: MOBILE (max 640px) ========== */
+    @media (max-width: 640px) {
+      body { -webkit-text-size-adjust: 100%; }
+
+      .hero {
+        min-height: auto;
+        padding: 20px 16px 30px;
+      }
+
+      .hero-container { gap: 24px; }
+
+      .hero-left h1 { font-size: 1.6rem; margin-bottom: 12px; }
+      .hero-left .subhead { font-size: 0.95rem; margin-bottom: 20px; }
+
+      .badge-row { gap: 8px; margin-bottom: 16px; }
+      .badge { padding: 5px 12px; font-size: 0.7rem; }
+
+      /* Mode toggle: horizontal scroll on tiny screens */
+      .mode-toggle {
+        gap: 8px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        padding-bottom: 4px;
+      }
+      .mode-toggle::-webkit-scrollbar { display: none; }
+      .mode-btn {
+        padding: 10px 16px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        /* Bigger tap target */
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Upload card */
+      .hero-right {
+        padding: 24px 16px;
+        border-radius: 16px;
+      }
+      .upload-header h2 { font-size: 1.25rem; }
+      .upload-header p { font-size: 0.9rem; }
+      .upload-area { padding: 35px 20px; }
+      .upload-icon { width: 55px; height: 55px; }
+      .upload-area .main-text { font-size: 1.1rem; }
+      .upload-area .sub-text { font-size: 0.85rem; }
+      #previewImage { max-height: 200px; }
+
+      /* Big thumb-friendly CTA */
+      .transform-btn {
+        padding: 16px 20px;
+        font-size: 1.05rem;
+        min-height: 56px;
+        border-radius: 14px;
+      }
+
+      .trust-row { gap: 12px; flex-wrap: wrap; }
+      .trust-item { font-size: 0.75rem; }
+
+      /* Analysis card */
+      .face-analysis-section { padding: 30px 16px 16px; }
+      .analysis-card { padding: 24px 16px; border-radius: 16px; }
+      .analysis-card h2 { font-size: 1.4rem; }
+      .face-shape-badge { font-size: 0.95rem; padding: 8px 22px; }
+      .symmetry-value { font-size: 1.6rem; }
+      .best-match-callout { padding: 16px; }
+      .best-match-callout h3 { font-size: 1.05rem; }
+      .best-match-callout p { font-size: 0.9rem; }
+
+      /* Category filter: horizontal scroll */
+      .category-tabs {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 8px;
+        padding: 0 0 8px;
+      }
+      .category-tabs::-webkit-scrollbar { display: none; }
+      .cat-tab {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Results grid: 2 columns on phone */
+      .results-section { padding: 24px 16px 40px; }
+      .results-header { margin-bottom: 20px; }
+      .results-header h2 { font-size: 1.4rem; }
+      .results-header p { font-size: 0.9rem; }
+      .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .result-card { border-radius: 12px; }
+      .result-image-wrap { height: 180px; }
+      .result-info { padding: 10px 12px 14px; }
+      .result-info h3 { font-size: 0.9rem; }
+      .result-info .style-category { font-size: 0.68rem; }
+      .result-info p { font-size: 0.75rem; }
+      .match-score { font-size: 0.68rem; padding: 2px 8px; }
+      .best-match-ribbon { font-size: 0.65rem; padding: 4px 12px 4px 8px; top: 10px; }
+
+      /* Always show card actions on mobile (no hover) */
+      .card-actions { opacity: 1; }
+      .card-action-btn {
+        width: 34px;
+        height: 34px;
+        /* Bigger touch target via padding */
+        padding: 6px;
+      }
+
+      .watermark { font-size: 0.6rem; padding: 3px 8px; }
+
+      /* Unlock banner */
+      .unlock-banner {
+        padding: 20px 16px;
+        flex-direction: column;
+        text-align: center;
+        border-radius: 12px;
+        margin: 24px 0;
+      }
+      .unlock-text h3 { font-size: 1.1rem; }
+      .unlock-form { width: 100%; flex-direction: column; }
+      .unlock-form input {
+        width: 100%;
+        font-size: 16px; /* Prevents iOS zoom */
+      }
+      .unlock-btn { width: 100%; min-height: 48px; }
+
+      /* Funny section */
+      .funny-section { padding: 24px 16px; }
+      .funny-header h2 { font-size: 1.4rem; }
+      .funny-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .funny-card .funny-img { height: 120px; font-size: 2.8rem; }
+      .funny-card .funny-label { padding: 10px; font-size: 0.85rem; }
+
+      /* Share section */
+      .share-section { padding: 30px 16px; }
+      .share-container h2 { font-size: 1.4rem; }
+      .share-container p { font-size: 0.95rem; }
+      .share-buttons { flex-direction: column; gap: 10px; }
+      .share-btn-large {
+        width: 100%;
+        justify-content: center;
+        min-height: 52px;
+        font-size: 0.95rem;
+      }
+
+      /* Booking */
+      .booking-section { padding: 30px 16px; }
+      .booking-card { padding: 24px 16px; border-radius: 16px; }
+      .booking-card h2 { font-size: 1.3rem; }
+      .booking-form input,
+      .booking-form select {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        padding: 14px 14px;
+        min-height: 48px;
+      }
+      .book-btn { min-height: 52px; font-size: 1rem; }
+
+      /* Processing overlay */
+      .processing-overlay { padding: 20px; }
+      .processing-text { font-size: 1.1rem; }
+      .processing-step { font-size: 0.85rem; }
+
+      /* Footer */
+      footer { padding: 30px 16px; }
+    }
+
+    /* ========== RESPONSIVE: SMALL PHONE (max 380px) ========== */
+    @media (max-width: 380px) {
+      .hero { padding: 16px 12px 24px; }
+      .hero-left h1 { font-size: 1.35rem; }
+      .hero-left .subhead { font-size: 0.88rem; }
+      .hero-right { padding: 20px 12px; }
+      .upload-area { padding: 28px 16px; }
+      .upload-icon { width: 45px; height: 45px; }
+      .upload-area .main-text { font-size: 1rem; }
+      .transform-btn { font-size: 0.95rem; padding: 14px 16px; }
+
+      /* Single column results on very small screens */
+      .results-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .result-image-wrap { height: 220px; }
+      .result-info h3 { font-size: 1rem; }
+
+      .funny-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ========== MOBILE CAMERA BUTTON ========== */
+    .mobile-camera-btn {
+      display: none;
+      width: 100%;
+      padding: 16px;
+      margin-top: 12px;
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      background: #f5f0ff;
+      color: var(--primary);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      min-height: 52px;
+      transition: all 0.2s;
+    }
+
+    .mobile-camera-btn:active {
+      background: var(--primary);
+      color: white;
+      transform: scale(0.98);
+    }
+
+    .mobile-camera-btn svg { vertical-align: middle; margin-right: 6px; }
+
+    @media (max-width: 640px) {
+      .mobile-camera-btn { display: block; }
+    }
+
+    /* ========== TOUCH / ACTIVE STATES ========== */
+    @media (hover: none) and (pointer: coarse) {
+      /* Remove all hover effects on touch devices */
+      .result-card:hover { transform: none; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+      .funny-card:hover { transform: none; }
+      .transform-btn:hover { transform: none; box-shadow: none; }
+      .share-btn-large:hover { transform: none; box-shadow: none; }
+      .book-btn:hover { transform: none; box-shadow: none; }
+      .card-action-btn:hover { background: rgba(255,255,255,0.95); color: #333; transform: none; }
+
+      /* Add :active press effects instead */
+      .result-card:active { transform: scale(0.98); }
+      .funny-card:active { transform: scale(0.96); }
+      .transform-btn:active { transform: scale(0.97); opacity: 0.9; }
+      .share-btn-large:active { transform: scale(0.97); opacity: 0.9; }
+      .book-btn:active { transform: scale(0.97); opacity: 0.9; }
+      .card-action-btn:active { background: var(--primary); color: white; }
+      .mode-btn:active { transform: scale(0.96); }
+      .cat-tab:active { transform: scale(0.95); }
+      .unlock-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+      /* Always show card actions (no hover needed) */
+      .card-actions { opacity: 1; }
+    }
+
+    /* Safe area insets for notched phones */
+    @supports (padding: max(0px)) {
+      .hero { padding-top: max(20px, env(safe-area-inset-top)); }
+      footer { padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+      .processing-overlay {
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+      }
     }
   </style>
 </head>
@@ -952,8 +1225,21 @@
           <p class="main-text" id="uploadMainText">Drop your selfie here</p>
           <p class="sub-text">or click to take/choose a photo</p>
           <img id="previewImage" alt="Your photo">
+          <!-- Camera input (front camera) for mobile selfie -->
           <input type="file" id="photoUpload" accept="image/*" capture="user" style="display: none;">
+          <!-- Gallery-only input (no capture attr) for picking from library -->
+          <input type="file" id="photoGallery" accept="image/*" style="display: none;">
         </div>
+
+        <!-- Separate camera/gallery buttons on mobile -->
+        <button class="mobile-camera-btn" id="mobileCameraBtn" type="button">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+          Take a Selfie
+        </button>
+        <button class="mobile-camera-btn" id="mobileGalleryBtn" type="button" style="border-color:#e5e7eb;background:#fafafa;color:#666;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Choose from Gallery
+        </button>
 
         <button class="transform-btn" id="transformBtn">Analyze My Face &amp; Find My Best Cut</button>
 
@@ -1255,35 +1541,57 @@
       const subtitle = document.getElementById('uploadSubtitle');
       const mainText = document.getElementById('uploadMainText');
 
+      const isMobile = window.innerWidth <= 640;
+      const camBtn = document.getElementById('mobileCameraBtn');
+      const galBtn = document.getElementById('mobileGalleryBtn');
+
       if (mode === 'best') {
-        btn.textContent = 'Analyze My Face & Find My Best Cut';
+        btn.textContent = isMobile ? 'Find My Best Cut' : 'Analyze My Face & Find My Best Cut';
         btn.classList.remove('fun-active');
-        title.textContent = 'Upload a Selfie';
+        title.textContent = isMobile ? 'Take a Selfie' : 'Upload a Selfie';
         subtitle.innerHTML = '<span class="no-signup">No signup needed</span> &mdash; see your best haircut instantly';
-        if (!uploadedFile) mainText.textContent = 'Drop your selfie here';
+        if (!uploadedFile) mainText.textContent = isMobile ? 'Tap below to snap a selfie' : 'Drop your selfie here';
+        if (camBtn && !uploadedFile) camBtn.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg> Take a Selfie';
       } else if (mode === 'tryon') {
-        btn.textContent = 'Try On 20+ Hairstyles';
+        btn.textContent = isMobile ? 'Try On Styles' : 'Try On 20+ Hairstyles';
         btn.classList.remove('fun-active');
-        title.textContent = 'Upload Your Photo';
+        title.textContent = isMobile ? 'Your Photo' : 'Upload Your Photo';
         subtitle.innerHTML = '<span class="no-signup">No signup needed</span> &mdash; try on any style instantly';
-        if (!uploadedFile) mainText.textContent = 'Drop your photo here';
+        if (!uploadedFile) mainText.textContent = isMobile ? 'Tap below to take a photo' : 'Drop your photo here';
+        if (camBtn && !uploadedFile) camBtn.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg> Take a Photo';
       } else if (mode === 'fun') {
         btn.textContent = 'Give Them a Makeover!';
         btn.classList.add('fun-active');
-        title.textContent = 'Upload Your Victim';
-        subtitle.innerHTML = "Drop a photo of your friend, boyfriend, coworker...";
-        if (!uploadedFile) mainText.textContent = "Drop your friend's photo here";
+        title.textContent = isMobile ? 'Pick Your Victim' : 'Upload Your Victim';
+        subtitle.innerHTML = isMobile ? "Snap or pick a photo of your friend..." : "Drop a photo of your friend, boyfriend, coworker...";
+        if (!uploadedFile) mainText.textContent = isMobile ? "Tap below to snap their photo" : "Drop your friend's photo here";
+        if (camBtn && !uploadedFile) camBtn.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg> Snap Their Photo';
       }
     }
 
     // ========== UPLOAD ==========
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('photoUpload');
+    const galleryInput = document.getElementById('photoGallery');
     const previewImage = document.getElementById('previewImage');
     const transformBtn = document.getElementById('transformBtn');
+    const mobileCameraBtn = document.getElementById('mobileCameraBtn');
+    const mobileGalleryBtn = document.getElementById('mobileGalleryBtn');
 
-    uploadArea.addEventListener('click', () => fileInput.click());
+    // Desktop: click upload area opens file picker
+    uploadArea.addEventListener('click', () => {
+      // On mobile, let the dedicated buttons handle it
+      if (window.innerWidth <= 640) return;
+      fileInput.click();
+    });
 
+    // Mobile: dedicated camera button (front camera)
+    mobileCameraBtn.addEventListener('click', () => fileInput.click());
+
+    // Mobile: gallery button (no capture = shows gallery)
+    mobileGalleryBtn.addEventListener('click', () => galleryInput.click());
+
+    // Desktop drag-and-drop
     uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       uploadArea.classList.add('dragover');
@@ -1298,6 +1606,7 @@
     });
 
     fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+    galleryInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
 
     function handleFile(file) {
       if (!file || !file.type.startsWith('image/')) return;
@@ -1309,9 +1618,21 @@
         previewImage.style.display = 'block';
         uploadArea.querySelector('.upload-icon').style.display = 'none';
         uploadArea.querySelector('.main-text').textContent = 'Photo ready!';
-        uploadArea.querySelector('.sub-text').textContent = 'Click to change';
+        uploadArea.querySelector('.sub-text').textContent = 'Tap to change';
         uploadArea.classList.add('has-image');
         transformBtn.classList.add('show');
+
+        // On mobile, allow tapping upload area to retake
+        if (window.innerWidth <= 640) {
+          uploadArea.onclick = () => fileInput.click();
+          mobileCameraBtn.textContent = 'Retake Selfie';
+          mobileGalleryBtn.textContent = 'Choose Different Photo';
+        }
+
+        // Scroll transform button into view on mobile
+        setTimeout(() => {
+          transformBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 200);
       };
       reader.readAsDataURL(file);
     }
