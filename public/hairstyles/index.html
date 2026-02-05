@@ -484,6 +484,120 @@
       object-fit: cover;
     }
 
+    /* Before/After slider overlay */
+    .ba-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      cursor: col-resize;
+    }
+
+    .ba-before, .ba-after {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+
+    .ba-before img, .ba-after img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .ba-before {
+      z-index: 2;
+      clip-path: inset(0 50% 0 0);
+    }
+
+    .ba-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 3px;
+      height: 100%;
+      background: white;
+      z-index: 3;
+      transform: translateX(-50%);
+      box-shadow: 0 0 6px rgba(0,0,0,0.4);
+      pointer-events: none;
+    }
+
+    .ba-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 30px;
+      height: 30px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .ba-label {
+      position: absolute;
+      bottom: 8px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .ba-label-before {
+      left: 8px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+    }
+
+    .ba-label-after {
+      right: 8px;
+      background: rgba(108, 43, 217, 0.85);
+      color: white;
+    }
+
+    /* Generating state */
+    .result-generating {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+    }
+
+    .result-generating img {
+      width: 60%;
+      height: 70%;
+      object-fit: cover;
+      border-radius: 8px;
+      opacity: 0.4;
+      filter: blur(2px);
+    }
+
+    .result-generating .gen-label {
+      position: absolute;
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .gen-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: var(--primary-light);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 8px;
+    }
+
     /* Watermark */
     .watermark {
       position: absolute;
@@ -1492,16 +1606,13 @@
       { id: 'skullet', name: 'Skullet', emoji: '💀', desc: 'Bald on top, long in the back' },
     ];
 
-    // Demo images (placeholders - replaced by AI in production)
-    const DEMO_IMAGES = {};
-    HAIRSTYLES.forEach(s => {
-      DEMO_IMAGES[s.id] = `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80`;
-    });
-
     // ========== STATE ==========
     let currentMode = 'best';
     let uploadedFile = null;
+    let userSelfieDataUrl = null; // The user's uploaded selfie as a data URL
+    let userSelfieBase64 = null;  // Just the base64 data (no prefix)
     let faceAnalysis = null;
+    let transformedImages = {};   // { styleId: dataUrl } - AI-generated results
     let userData = {};
 
     // ========== WHITE-LABEL SETUP ==========
@@ -1612,9 +1723,15 @@
       if (!file || !file.type.startsWith('image/')) return;
       uploadedFile = file;
 
+      // Reset previous results when new photo uploaded
+      transformedImages = {};
+
       const reader = new FileReader();
       reader.onload = (e) => {
-        previewImage.src = e.target.result;
+        userSelfieDataUrl = e.target.result;
+        userSelfieBase64 = userSelfieDataUrl.split(',')[1]; // Strip data:image/...;base64,
+
+        previewImage.src = userSelfieDataUrl;
         previewImage.style.display = 'block';
         uploadArea.querySelector('.upload-icon').style.display = 'none';
         uploadArea.querySelector('.main-text').textContent = 'Photo ready!';
@@ -1644,11 +1761,21 @@
       const overlay = document.getElementById('processingOverlay');
       overlay.classList.add('show');
 
-      // Animate processing steps
-      await animateProcessing();
+      // Step 1: Analyze face
+      setProcessingStep(1);
+      faceAnalysis = await analyzeFaceAPI(userSelfieBase64);
 
-      // Generate fake analysis (in production, this calls the AI backend)
-      faceAnalysis = generateFaceAnalysis();
+      // Step 2: Show analysis immediately
+      setProcessingStep(2);
+      await new Promise(r => setTimeout(r, 600));
+
+      // Step 3: Rank hairstyles
+      setProcessingStep(3);
+      await new Promise(r => setTimeout(r, 400));
+
+      // Step 4: Start generating (we'll do this in background after showing results)
+      setProcessingStep(4);
+      await new Promise(r => setTimeout(r, 500));
 
       overlay.classList.remove('show');
 
@@ -1657,39 +1784,115 @@
       } else {
         showAnalysis();
         showResults();
+        // Kick off AI generation for each style in the background
+        generateAllTransformations();
       }
 
       showShareSection();
     });
 
-    async function animateProcessing() {
-      const steps = ['step1', 'step2', 'step3', 'step4'];
-      const delays = [800, 1000, 800, 1200];
-
-      for (let i = 0; i < steps.length; i++) {
-        const el = document.getElementById(steps[i]);
-        el.classList.add('active');
-        el.classList.remove('done');
-
-        await new Promise(r => setTimeout(r, delays[i]));
-
-        el.classList.remove('active');
-        el.classList.add('done');
+    function setProcessingStep(activeStep) {
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById('step' + i);
+        el.classList.remove('active', 'done');
+        if (i < activeStep) el.classList.add('done');
+        else if (i === activeStep) el.classList.add('active');
       }
     }
 
-    function generateFaceAnalysis() {
-      // In production: calls hairstyle-generator.js backend
-      // For demo: generates plausible analysis
+    /**
+     * Call the backend API to analyze the face.
+     * Falls back to client-side mock if no API available.
+     */
+    async function analyzeFaceAPI(base64Data) {
+      try {
+        const response = await fetch('/api/hairstyles/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data }),
+        });
+        if (response.ok) {
+          return await response.json();
+        }
+      } catch (e) {
+        // API not available, use mock
+      }
+
+      // Mock analysis for demo
       const shapes = ['OVAL', 'ROUND', 'SQUARE', 'HEART', 'OBLONG', 'DIAMOND'];
       const shape = shapes[Math.floor(Math.random() * shapes.length)];
-      const symmetry = Math.floor(Math.random() * 20) + 75; // 75-95 range
+      const symmetry = Math.floor(Math.random() * 20) + 75;
+      return { faceShape: shape, symmetryScore: symmetry, photoAngle: 'PORTRAIT' };
+    }
 
-      return {
-        faceShape: shape,
-        symmetryScore: symmetry,
-        photoAngle: 'PORTRAIT',
-      };
+    /**
+     * Call the backend to generate a single hairstyle transformation.
+     * Returns the AI-generated image data URL, or null if unavailable.
+     */
+    async function transformHairstyleAPI(base64Data, styleId) {
+      try {
+        const response = await fetch('/api/hairstyles/transform', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data, styleId }),
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.image) {
+            return `data:${result.mimeType || 'image/png'};base64,${result.image}`;
+          }
+        }
+      } catch (e) {
+        // API not available
+      }
+      return null;
+    }
+
+    /**
+     * Generate transformations for all styles in the background.
+     * Updates each card as its image comes back from the API.
+     */
+    async function generateAllTransformations() {
+      const ranked = rankHairstyles(faceAnalysis.faceShape);
+
+      for (const style of ranked) {
+        const resultUrl = await transformHairstyleAPI(userSelfieBase64, style.id);
+        if (resultUrl) {
+          transformedImages[style.id] = resultUrl;
+          updateCardWithTransformation(style.id, resultUrl);
+        }
+        // Small delay to avoid hammering the API
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }
+
+    /**
+     * Update a specific result card once its AI image is ready.
+     */
+    function updateCardWithTransformation(styleId, transformedUrl) {
+      const card = document.querySelector(`.result-card[data-style-id="${styleId}"]`);
+      if (!card) return;
+
+      const wrap = card.querySelector('.result-image-wrap');
+      wrap.innerHTML = `
+        <div class="ba-container" data-style-id="${styleId}">
+          <div class="ba-before"><img src="${userSelfieDataUrl}" alt="Before"></div>
+          <div class="ba-after"><img src="${transformedUrl}" alt="${styleId}"></div>
+          <div class="ba-divider"></div>
+          <span class="ba-label ba-label-before">You</span>
+          <span class="ba-label ba-label-after">New Style</span>
+        </div>
+        <div class="watermark">HairViewAI.com</div>
+        <div class="card-actions">
+          <button class="card-action-btn" onclick="shareStyle('${styleId}')" title="Share">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          </button>
+          <button class="card-action-btn" onclick="bookStyle('${styleId}')" title="Book this style">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </button>
+        </div>
+      `;
+      initBeforeAfterSlider(wrap.querySelector('.ba-container'));
     }
 
     // ========== FACE ANALYSIS DISPLAY ==========
@@ -1749,15 +1952,42 @@
         card.className = 'result-card';
         card.dataset.category = style.category;
         card.dataset.score = style.matchScore;
+        card.dataset.styleId = style.id;
 
         if (index === 0) {
           card.classList.add('best-match');
         }
 
+        // Check if we already have a transformed image for this style
+        const hasTransformed = transformedImages[style.id];
+
+        let imageHTML;
+        if (hasTransformed) {
+          // We have the AI result - show before/after slider
+          imageHTML = `
+            <div class="ba-container" data-style-id="${style.id}">
+              <div class="ba-before"><img src="${userSelfieDataUrl}" alt="Before"></div>
+              <div class="ba-after"><img src="${transformedImages[style.id]}" alt="${style.name}"></div>
+              <div class="ba-divider"></div>
+              <span class="ba-label ba-label-before">You</span>
+              <span class="ba-label ba-label-after">New Style</span>
+            </div>`;
+        } else {
+          // Show user's selfie with "generating" overlay (AI will fill this in)
+          imageHTML = `
+            <div class="result-generating">
+              <img src="${userSelfieDataUrl}" alt="Your photo">
+              <div class="gen-label">
+                <div class="gen-spinner"></div>
+                Generating ${style.name}...
+              </div>
+            </div>`;
+        }
+
         card.innerHTML = `
           ${index === 0 ? '<div class="best-match-ribbon">Best Match For You</div>' : ''}
           <div class="result-image-wrap">
-            <img src="${DEMO_IMAGES[style.id] || DEMO_IMAGES['pixie-cut']}" alt="${style.name}">
+            ${imageHTML}
             <div class="watermark">HairViewAI.com</div>
             <div class="card-actions">
               <button class="card-action-btn" onclick="shareStyle('${style.id}')" title="Share">
@@ -1777,6 +2007,11 @@
         `;
 
         grid.appendChild(card);
+
+        // If we already have the transformed image, init the slider
+        if (hasTransformed) {
+          initBeforeAfterSlider(card.querySelector('.ba-container'));
+        }
       });
 
       section.classList.add('show');
@@ -1792,6 +2027,39 @@
         symmetry: faceAnalysis.symmetryScore,
         styles_count: ranked.length,
       });
+    }
+
+    // ========== BEFORE / AFTER SLIDER ==========
+    function initBeforeAfterSlider(container) {
+      if (!container) return;
+
+      let isDragging = false;
+
+      function updateSlider(x) {
+        const rect = container.getBoundingClientRect();
+        let pct = ((x - rect.left) / rect.width) * 100;
+        pct = Math.max(5, Math.min(95, pct));
+
+        const before = container.querySelector('.ba-before');
+        const divider = container.querySelector('.ba-divider');
+        before.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+        divider.style.left = pct + '%';
+      }
+
+      // Mouse events (desktop)
+      container.addEventListener('mousedown', (e) => { isDragging = true; updateSlider(e.clientX); });
+      document.addEventListener('mousemove', (e) => { if (isDragging) updateSlider(e.clientX); });
+      document.addEventListener('mouseup', () => { isDragging = false; });
+
+      // Touch events (mobile)
+      container.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        updateSlider(e.touches[0].clientX);
+      }, { passive: true });
+      container.addEventListener('touchmove', (e) => {
+        if (isDragging) updateSlider(e.touches[0].clientX);
+      }, { passive: true });
+      container.addEventListener('touchend', () => { isDragging = false; });
     }
 
     // ========== CATEGORY FILTER ==========
@@ -1820,9 +2088,12 @@
       FUNNY_STYLES.forEach(style => {
         const card = document.createElement('div');
         card.className = 'funny-card';
-        card.onclick = () => applyFunnyStyle(style);
+        card.onclick = () => applyFunnyStyle(style, card);
         card.innerHTML = `
-          <div class="funny-img">${style.emoji}</div>
+          <div class="funny-img" style="position:relative;overflow:hidden;">
+            <img src="${userSelfieDataUrl}" alt="Your friend" style="width:100%;height:100%;object-fit:cover;opacity:0.7;">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3rem;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${style.emoji}</div>
+          </div>
           <div class="funny-label">${style.name}<br><small style="color:#888;font-weight:400">${style.desc}</small></div>
         `;
         grid.appendChild(card);
@@ -1834,10 +2105,32 @@
       trackEvent('funny_mode_shown', { styles: FUNNY_STYLES.length });
     }
 
-    function applyFunnyStyle(style) {
-      // In production: calls AI to apply the funny hairstyle
-      // For demo: shows a fun alert
-      alert(`Generating ${style.name} on your friend... 😂\n\nIn the full version, AI will generate a hilarious photorealistic ${style.name} on the uploaded photo!`);
+    async function applyFunnyStyle(style, card) {
+      // Show generating state on the card
+      const imgDiv = card.querySelector('.funny-img');
+      imgDiv.innerHTML = `
+        <img src="${userSelfieDataUrl}" alt="Generating..." style="width:100%;height:100%;object-fit:cover;opacity:0.3;filter:blur(2px);">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:white;">
+          <div class="gen-spinner" style="margin:0 auto 8px;"></div>
+          <div style="font-weight:700;font-size:0.85rem;">Applying ${style.name}...</div>
+        </div>
+      `;
+
+      // Try real API
+      const resultUrl = await transformHairstyleAPI(userSelfieBase64, style.id);
+      if (resultUrl) {
+        imgDiv.innerHTML = `<img src="${resultUrl}" alt="${style.name}" style="width:100%;height:100%;object-fit:cover;">`;
+      } else {
+        // API not available - show the selfie with the emoji overlay
+        imgDiv.innerHTML = `
+          <img src="${userSelfieDataUrl}" alt="${style.name}" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;top:8px;right:8px;font-size:2rem;">${style.emoji}</div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:6px;background:linear-gradient(transparent,rgba(0,0,0,0.7));color:white;font-size:0.75rem;font-weight:600;text-align:center;">
+            ${style.name} - Connect API to generate!
+          </div>
+        `;
+      }
+
       trackEvent('funny_style_selected', { style: style.id });
     }
 
