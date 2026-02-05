@@ -48,6 +48,7 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Local: http://localhost:${PORT}`);
   console.log(`Routes:`);
-  console.log(`  /roofing - Roof inspection landing page`);
-  console.log(`  /fencing - Fence visualization landing page`);
+  console.log(`  /roofing    - Roof inspection landing page`);
+  console.log(`  /fencing    - Fence visualization landing page`);
+  console.log(`  /hairstyles - AI hairstyle try-on (white-label for stylists)`);
 });
